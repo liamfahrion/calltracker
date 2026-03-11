@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pump Reminders</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤙</text></svg>" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,7 +22,7 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: Georgia, serif;
       background: var(--green-pale);
       color: var(--text-dark);
       min-height: 100vh;
@@ -317,7 +318,7 @@
 <div id="authScreen">
   <div class="auth-card">
     <div class="auth-logo">
-      <div class="auth-logo-icon">📞</div>
+      <div class="auth-logo-icon">🤙</div>
       <div class="auth-logo-text">Pump Reminders</div>
     </div>
     <div id="authError" class="auth-error"></div>
@@ -355,7 +356,7 @@
 <div id="appScreen">
   <header>
     <div class="logo">
-      <div class="logo-icon">📞</div>
+      <div class="logo-icon">🤙</div>
       Pump Reminders
     </div>
     <div class="header-right">
@@ -392,6 +393,9 @@
           <input type="date" class="form-input date-input" id="dateInput" />
           <button class="add-btn" onclick="addContact()">+ Add</button>
         </div>
+        <div class="form-row" style="margin-top:10px;">
+          <input type="text" class="form-input" id="notesInput" placeholder="Notes (optional)..." maxlength="200" />
+        </div>
       </div>
 
       <div class="section-header">
@@ -405,6 +409,11 @@
 
     <!-- EXPORT TAB -->
     <div class="tab-panel" id="tab-export">
+
+      <div style="background:var(--green-dark);color:white;border-radius:16px;padding:20px 22px;margin-bottom:20px;font-size:0.95rem;line-height:1.7;box-shadow:0 4px 20px rgba(26,122,60,0.35);">
+        <strong style="display:block;font-size:1rem;margin-bottom:8px;">How to get these into Apollo</strong>
+        Export the CSV then go to Apollo and click Sequences, Create Sequence, Add Contacts, Upload CSV, Import Contacts. Then drag it in it makes a list. LFG
+      </div>
 
       <div class="export-header">
         <div class="export-header-left">
@@ -536,14 +545,16 @@
     const nameInput = document.getElementById('nameInput');
     const emailInput = document.getElementById('contactEmailInput');
     const dateInput = document.getElementById('dateInput');
+    const notesInput = document.getElementById('notesInput');
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
+    const notes = notesInput.value.trim();
     const email_date = dateInput.value || todayStr();
     if (!name) { nameInput.focus(); showToast('Enter a contact name.'); return; }
 
     const { data, error } = await db
       .from('contacts')
-      .insert({ name, email, email_date, called: false, user_id: currentUser.id })
+      .insert({ name, email, notes, email_date, called: false, user_id: currentUser.id })
       .select()
       .single();
 
@@ -552,6 +563,7 @@
     render();
     nameInput.value = '';
     emailInput.value = '';
+    notesInput.value = '';
     dateInput.value = todayStr();
     nameInput.focus();
     showToast('Contact added!');
@@ -652,7 +664,7 @@
             <div class="pipeline-name">${escapeHtml(c.name)}</div>
             <div class="pipeline-dates">
               <span>📧 Emailed ${formatDate(c.email_date)}</span>
-              <span>📞 Call ${formatDate(callDate)}</span>
+              <span>🤙 Call ${formatDate(callDate)}</span>
               ${c.email ? `<span>✉️ ${escapeHtml(c.email)}</span>` : ''}
             </div>
           </div>
@@ -680,6 +692,7 @@
         <div class="export-info">
           <div class="export-name">${escapeHtml(c.name)}</div>
           <div class="export-email">${c.email ? escapeHtml(c.email) : '<span style="opacity:0.5">No email on file</span>'}</div>
+          ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:3px;">${escapeHtml(c.notes)}</div>` : ''}
         </div>
         <div class="export-date">Day email sent:<br/><strong>${formatDate(c.email_date)}</strong></div>
       </div>

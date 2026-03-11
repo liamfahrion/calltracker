@@ -19,58 +19,42 @@
       --text-muted: #5a7a65;
       --shadow: 0 2px 12px rgba(46,204,113,0.15);
       --shadow-hover: 0 6px 24px rgba(46,204,113,0.3);
+      --blue-dark: #1a3a6b;
+      --blue-main: #3b7dd8;
+      --blue-pale: #e8f0fb;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--green-pale);
-      color: var(--text-dark);
-      min-height: 100vh;
+      background: var(--green-pale); color: var(--text-dark); min-height: 100vh;
     }
 
     /* ── AUTH ── */
     #authScreen {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 16px;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 16px;
     }
-
     .auth-card {
-      background: var(--white);
-      border-radius: 20px;
-      padding: 40px 36px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: var(--shadow-hover);
+      background: var(--white); border-radius: 20px; padding: 40px 36px;
+      width: 100%; max-width: 420px; box-shadow: var(--shadow-hover);
     }
-
     .auth-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
     .auth-logo-icon {
-      width: 40px; height: 40px; background: var(--green-dark);
-      border-radius: 10px; display: flex; align-items: center;
-      justify-content: center; font-size: 20px;
+      width: 40px; height: 40px; background: var(--green-dark); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
     }
     .auth-logo-text { font-size: 1.4rem; font-weight: 700; color: var(--text-dark); }
-
-    .auth-tabs {
-      display: flex; margin-bottom: 24px;
-      border-bottom: 2px solid var(--green-light);
-    }
+    .auth-tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid var(--green-light); }
     .auth-tab {
-      flex: 1; padding: 10px; text-align: center; font-weight: 600;
-      font-size: 0.9rem; cursor: pointer; border: none; background: transparent;
-      color: var(--text-muted); border-bottom: 2px solid transparent;
-      margin-bottom: -2px; transition: all 0.2s;
+      flex: 1; padding: 10px; text-align: center; font-weight: 600; font-size: 0.9rem;
+      cursor: pointer; border: none; background: transparent; color: var(--text-muted);
+      border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
     }
     .auth-tab.active { color: var(--green-dark); border-bottom-color: var(--green-dark); }
-
     .auth-field { margin-bottom: 14px; }
     .auth-label {
-      display: block; font-size: 0.8rem; font-weight: 600;
-      color: var(--text-muted); margin-bottom: 6px;
-      text-transform: uppercase; letter-spacing: 0.4px;
+      display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px;
     }
     .auth-input {
       width: 100%; border: 2px solid var(--green-light); border-radius: 10px;
@@ -78,7 +62,6 @@
       transition: border-color 0.2s; color: var(--text-dark);
     }
     .auth-input:focus { border-color: var(--green-main); }
-
     .auth-btn {
       width: 100%; background: var(--green-dark); color: white; border: none;
       border-radius: 10px; padding: 12px; font-size: 1rem; font-weight: 600;
@@ -87,7 +70,6 @@
     .auth-btn:hover { background: var(--green-main); }
     .auth-btn:active { transform: scale(0.98); }
     .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
     .auth-error {
       background: #fde8e8; color: #c0392b; border-radius: 8px;
       padding: 10px 14px; font-size: 0.85rem; margin-bottom: 14px; display: none;
@@ -97,23 +79,46 @@
       padding: 10px 14px; font-size: 0.85rem; margin-bottom: 14px; display: none;
     }
 
+    /* ── PENDING SCREEN ── */
+    #pendingScreen {
+      display: none; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 16px;
+    }
+    .pending-card {
+      background: var(--white); border-radius: 20px; padding: 48px 36px;
+      width: 100%; max-width: 420px; box-shadow: var(--shadow-hover); text-align: center;
+    }
+    .pending-icon { font-size: 3rem; margin-bottom: 16px; }
+    .pending-card h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 10px; }
+    .pending-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px; }
+    .pending-signout {
+      background: transparent; border: 2px solid var(--green-light); color: var(--text-muted);
+      border-radius: 10px; padding: 10px 20px; font-size: 0.9rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pending-signout:hover { border-color: var(--green-main); color: var(--text-dark); }
+
     /* ── APP ── */
     #appScreen { display: none; }
-
     header {
-      background: var(--green-dark); color: white;
-      padding: 0 24px; display: flex; align-items: center;
-      justify-content: space-between; height: 64px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      background: var(--green-dark); color: white; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
     .logo { display: flex; align-items: center; gap: 10px; font-size: 1.3rem; font-weight: 700; }
     .logo-icon {
-      width: 32px; height: 32px; background: var(--green-main);
-      border-radius: 8px; display: flex; align-items: center;
-      justify-content: center; font-size: 17px;
+      width: 32px; height: 32px; background: var(--green-main); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 17px;
     }
-    .header-right { display: flex; align-items: center; gap: 14px; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
     .user-email { font-size: 0.8rem; opacity: 0.75; }
+    .role-badge {
+      font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .role-badge.ae { background: var(--green-main); color: white; }
+    .role-badge.bdr { background: var(--blue-main); color: white; }
+    .role-badge.admin { background: #f0a500; color: white; }
     .signout-btn {
       background: rgba(255,255,255,0.15); border: none; color: white;
       padding: 6px 12px; border-radius: 8px; font-size: 0.8rem;
@@ -121,46 +126,39 @@
     }
     .signout-btn:hover { background: rgba(255,255,255,0.25); }
 
-    /* ── NAV TABS ── */
+    /* ── NAV ── */
     .app-nav {
-      background: var(--white);
-      border-bottom: 1px solid #dceee4;
-      display: flex;
-      padding: 0 24px;
+      background: var(--white); border-bottom: 1px solid #dceee4;
+      display: flex; padding: 0 24px;
     }
     .nav-tab {
-      padding: 14px 20px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      border-bottom: 3px solid transparent;
-      margin-bottom: -1px;
-      transition: all 0.2s;
+      padding: 14px 20px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+      border: none; background: transparent; color: var(--text-muted);
+      border-bottom: 3px solid transparent; margin-bottom: -1px; transition: all 0.2s;
     }
     .nav-tab.active { color: var(--green-dark); border-bottom-color: var(--green-dark); }
     .nav-tab:hover:not(.active) { color: var(--text-dark); }
 
-    /* ── MAIN ── */
     main { max-width: 720px; margin: 0 auto; padding: 28px 16px 80px; }
-
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* Call Today */
+    /* ── CALL TODAY ── */
     .call-today-section {
-      background: var(--green-dark); border-radius: 16px;
-      padding: 20px 22px; margin-bottom: 24px; color: white;
-      box-shadow: 0 4px 20px rgba(26,122,60,0.35);
+      background: var(--green-dark); border-radius: 16px; padding: 20px 22px;
+      margin-bottom: 24px; color: white; box-shadow: 0 4px 20px rgba(26,122,60,0.35);
     }
-    .call-today-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-    .call-today-header h2 { font-size: 1.15rem; font-weight: 700; }
+    .assigned-section {
+      background: var(--blue-dark); border-radius: 16px; padding: 20px 22px;
+      margin-bottom: 24px; color: white; box-shadow: 0 4px 20px rgba(26,58,107,0.35);
+    }
+    .section-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .section-hdr h2 { font-size: 1.1rem; font-weight: 700; }
     .call-badge {
-      background: var(--green-main); color: white;
-      font-size: 0.75rem; font-weight: 700; padding: 2px 9px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 700; padding: 2px 9px;
+      border-radius: 20px; background: var(--green-main); color: white;
     }
+    .assigned-badge { background: var(--blue-main); }
     .call-list { display: flex; flex-direction: column; gap: 8px; }
     .call-item {
       background: rgba(255,255,255,0.12); border-radius: 10px;
@@ -169,10 +167,9 @@
     .call-item.called { opacity: 0.5; }
     .call-item.called .call-name { text-decoration: line-through; }
     .call-check {
-      width: 26px; height: 26px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.5); background: transparent;
-      cursor: pointer; flex-shrink: 0; display: flex; align-items: center;
-      justify-content: center; font-size: 13px; color: transparent; transition: all 0.2s;
+      width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5);
+      background: transparent; cursor: pointer; flex-shrink: 0; display: flex;
+      align-items: center; justify-content: center; font-size: 13px; color: transparent; transition: all 0.2s;
     }
     .call-item.called .call-check { background: var(--green-main); border-color: var(--green-main); color: white; }
     .call-check:hover { background: rgba(255,255,255,0.2); }
@@ -180,10 +177,10 @@
     .call-meta { font-size: 0.78rem; opacity: 0.7; }
     .empty-call { text-align: center; padding: 16px; opacity: 0.65; font-size: 0.9rem; }
 
-    /* Add form */
+    /* ── ADD FORM ── */
     .add-form {
-      background: var(--white); border-radius: 16px;
-      padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow);
+      background: var(--white); border-radius: 16px; padding: 20px;
+      margin-bottom: 24px; box-shadow: var(--shadow);
     }
     .add-form h2 {
       font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;
@@ -193,22 +190,20 @@
     .form-input {
       flex: 1; border: 2px solid var(--green-light); border-radius: 10px;
       padding: 10px 14px; font-size: 0.95rem; outline: none;
-      transition: border-color 0.2s; color: var(--text-dark); background: var(--white);
-      min-width: 120px;
+      transition: border-color 0.2s; color: var(--text-dark); background: var(--white); min-width: 120px;
     }
     .form-input:focus { border-color: var(--green-main); }
     .form-input::placeholder { color: #aac4b5; }
     .date-input { width: 150px; flex: none; }
     .add-btn {
-      background: var(--green-main); color: white; border: none;
-      border-radius: 10px; padding: 10px 20px; font-size: 0.95rem;
-      font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s;
-      white-space: nowrap;
+      background: var(--green-main); color: white; border: none; border-radius: 10px;
+      padding: 10px 20px; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      transition: background 0.2s, transform 0.1s; white-space: nowrap;
     }
     .add-btn:hover { background: var(--green-dark); }
     .add-btn:active { transform: scale(0.97); }
 
-    /* Pipeline */
+    /* ── PIPELINE ── */
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .section-title { font-size: 1.1rem; font-weight: 700; }
     .pipeline-list { display: flex; flex-direction: column; gap: 10px; }
@@ -220,6 +215,7 @@
     .pipeline-item:hover { box-shadow: var(--shadow-hover); transform: translateY(-1px); }
     .pipeline-item.upcoming { border-left-color: #f0a500; }
     .pipeline-item.overdue { border-left-color: #e74c3c; }
+    .pipeline-item.assigned-own { border-left-color: var(--blue-main); }
     .pipeline-info { flex: 1; }
     .pipeline-name { font-size: 0.95rem; font-weight: 600; }
     .pipeline-dates { font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; display: flex; gap: 14px; flex-wrap: wrap; }
@@ -231,18 +227,29 @@
     .pill-upcoming { background: #fff3cd; color: #7a5500; }
     .pill-overdue  { background: #fde8e8; color: #c0392b; }
     .pill-called   { background: #f0f0f0; color: var(--text-muted); }
-
+    .pill-assigned { background: var(--blue-pale); color: var(--blue-dark); }
     .delete-btn {
-      background: transparent; border: none; cursor: pointer;
-      color: #ccc; font-size: 18px; padding: 4px 6px; border-radius: 6px;
+      background: transparent; border: none; cursor: pointer; color: #ccc;
+      font-size: 18px; padding: 4px 6px; border-radius: 6px;
       transition: color 0.2s, background 0.2s; line-height: 1;
     }
     .delete-btn:hover { color: #e74c3c; background: #fff0f0; }
+    .assign-select {
+      border: 2px solid var(--green-light); border-radius: 8px; padding: 4px 8px;
+      font-size: 0.78rem; color: var(--text-muted); background: white; cursor: pointer;
+      outline: none; transition: border-color 0.2s; max-width: 130px;
+    }
+    .assign-select:focus { border-color: var(--blue-main); }
+    .assign-select.assigned { border-color: var(--blue-main); color: var(--blue-dark); background: var(--blue-pale); }
 
-    /* ── EXPORT TAB ── */
+    /* ── EXPORT ── */
+    .export-section-label {
+      font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 8px;
+    }
     .export-header {
-      background: var(--white); border-radius: 16px;
-      padding: 18px 20px; margin-bottom: 16px; box-shadow: var(--shadow);
+      background: var(--white); border-radius: 16px; padding: 18px 20px;
+      margin-bottom: 16px; box-shadow: var(--shadow);
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
     .export-header-left { display: flex; align-items: center; gap: 12px; }
@@ -251,42 +258,63 @@
       font-weight: 600; font-size: 0.9rem; cursor: pointer; user-select: none;
     }
     .selected-count { font-size: 0.85rem; color: var(--text-muted); }
-
     .export-btn {
-      background: var(--green-dark); color: white; border: none;
-      border-radius: 10px; padding: 10px 22px; font-size: 0.9rem;
-      font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.1s;
-      white-space: nowrap; letter-spacing: 0.3px;
+      background: var(--green-dark); color: white; border: none; border-radius: 10px;
+      padding: 10px 22px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      transition: background 0.2s, transform 0.1s; white-space: nowrap; letter-spacing: 0.3px;
     }
     .export-btn:hover { background: #145a2d; }
     .export-btn:active { transform: scale(0.97); }
     .export-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
     .export-list { display: flex; flex-direction: column; gap: 8px; }
-
     .export-item {
       background: var(--white); border-radius: 12px; padding: 14px 18px;
       display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow);
-      cursor: pointer; transition: box-shadow 0.15s;
-      border: 2px solid transparent;
+      cursor: pointer; transition: box-shadow 0.15s; border: 2px solid transparent;
     }
     .export-item:hover { box-shadow: var(--shadow-hover); }
     .export-item.selected { border-color: var(--green-main); background: #f4fdf7; }
-
+    .export-item.is-assigned { border-left: 4px solid var(--blue-main); }
+    .export-item.is-assigned.selected { border-color: var(--blue-main); background: var(--blue-pale); }
     .export-checkbox {
-      width: 20px; height: 20px; border-radius: 5px;
-      border: 2px solid var(--green-light); background: white;
-      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-      font-size: 12px; color: transparent; transition: all 0.15s;
+      width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--green-light);
+      background: white; flex-shrink: 0; display: flex; align-items: center;
+      justify-content: center; font-size: 12px; color: transparent; transition: all 0.15s;
     }
-    .export-item.selected .export-checkbox {
-      background: var(--green-main); border-color: var(--green-main); color: white;
-    }
-
+    .export-item.selected .export-checkbox { background: var(--green-main); border-color: var(--green-main); color: white; }
+    .export-item.is-assigned.selected .export-checkbox { background: var(--blue-main); border-color: var(--blue-main); color: white; }
     .export-info { flex: 1; }
     .export-name { font-size: 0.95rem; font-weight: 600; }
     .export-email { font-size: 0.82rem; color: var(--text-muted); margin-top: 1px; }
     .export-date { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
+
+    /* ── ADMIN TAB ── */
+    .admin-user-list { display: flex; flex-direction: column; gap: 10px; }
+    .admin-user-item {
+      background: var(--white); border-radius: 14px; padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow);
+    }
+    .admin-user-info { flex: 1; }
+    .admin-user-name { font-size: 0.95rem; font-weight: 600; }
+    .admin-user-email { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+    .admin-role-select {
+      border: 2px solid var(--green-light); border-radius: 8px; padding: 6px 10px;
+      font-size: 0.85rem; color: var(--text-dark); background: white;
+      cursor: pointer; outline: none; transition: border-color 0.2s;
+    }
+    .admin-role-select:focus { border-color: var(--green-main); }
+    .admin-role-select.role-ae { border-color: var(--green-main); background: var(--green-pale); color: var(--green-dark); font-weight: 600; }
+    .admin-role-select.role-bdr { border-color: var(--blue-main); background: var(--blue-pale); color: var(--blue-dark); font-weight: 600; }
+    .admin-role-select.role-pending { border-color: #ccc; color: var(--text-muted); }
+
+    /* Temp buttons */
+    .temp-btn {
+      width: 38px; height: 38px; border-radius: 8px; border: 2px solid var(--green-light);
+      background: white; font-size: 18px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0;
+    }
+    .temp-btn:hover { border-color: var(--green-main); transform: scale(1.1); }
+    .temp-btn.selected { border-color: var(--green-dark); background: var(--green-pale); box-shadow: 0 0 0 2px var(--green-main); }
 
     /* Shared */
     .empty-state { text-align: center; padding: 48px 16px; color: var(--text-muted); }
@@ -297,21 +325,11 @@
     #toast {
       position: fixed; bottom: 24px; left: 50%;
       transform: translateX(-50%) translateY(80px);
-      background: var(--green-dark); color: white;
-      padding: 10px 20px; border-radius: 24px; font-size: 0.9rem; font-weight: 500;
-      transition: transform 0.3s ease; pointer-events: none; z-index: 999;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      background: var(--green-dark); color: white; padding: 10px 20px; border-radius: 24px;
+      font-size: 0.9rem; font-weight: 500; transition: transform 0.3s ease;
+      pointer-events: none; z-index: 999; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     }
     #toast.show { transform: translateX(-50%) translateY(0); }
-
-    .temp-btn {
-      width: 38px; height: 38px; border-radius: 8px; border: 2px solid var(--green-light);
-      background: white; font-size: 18px; cursor: pointer; display: flex;
-      align-items: center; justify-content: center; transition: all 0.15s;
-      flex-shrink: 0;
-    }
-    .temp-btn:hover { border-color: var(--green-main); transform: scale(1.1); }
-    .temp-btn.selected { border-color: var(--green-dark); background: var(--green-pale); box-shadow: 0 0 0 2px var(--green-main); }
 
     @media (max-width: 520px) {
       .date-input { width: 100%; }
@@ -333,8 +351,8 @@
     <div id="authError" class="auth-error"></div>
     <div id="authSuccess" class="auth-success"></div>
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
-      <button class="auth-tab" onclick="switchTab('signup')">Create Account</button>
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">Create Account</button>
     </div>
     <div id="loginForm">
       <div class="auth-field">
@@ -349,6 +367,10 @@
     </div>
     <div id="signupForm" style="display:none">
       <div class="auth-field">
+        <label class="auth-label">Your Name</label>
+        <input type="text" class="auth-input" id="signupName" placeholder="First Last" />
+      </div>
+      <div class="auth-field">
         <label class="auth-label">Email</label>
         <input type="email" class="auth-input" id="signupEmail" placeholder="you@company.com" />
       </div>
@@ -361,6 +383,16 @@
   </div>
 </div>
 
+<!-- PENDING -->
+<div id="pendingScreen">
+  <div class="pending-card">
+    <div class="pending-icon">⏳</div>
+    <h2>Waiting for access</h2>
+    <p>Your account has been created. Ask your admin to assign you a role so you can get in.</p>
+    <button class="pending-signout" onclick="signOut()">Sign out</button>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="appScreen">
   <header>
@@ -370,22 +402,31 @@
     </div>
     <div class="header-right">
       <span class="user-email" id="userEmail"></span>
+      <span class="role-badge" id="roleBadge"></span>
       <button class="signout-btn" onclick="signOut()">Sign out</button>
     </div>
   </header>
 
-  <nav class="app-nav">
+  <nav class="app-nav" id="appNav">
     <button class="nav-tab active" onclick="switchAppTab('contacts', this)">Contacts</button>
     <button class="nav-tab" onclick="switchAppTab('export', this)">Export to Apollo</button>
+    <button class="nav-tab" id="adminNavTab" style="display:none" onclick="switchAppTab('admin', this)">Manage Users</button>
   </nav>
 
   <main>
 
     <!-- CONTACTS TAB -->
     <div class="tab-panel active" id="tab-contacts">
+      <div class="assigned-section" id="assignedSection" style="display:none">
+        <div class="section-hdr">
+          <h2>Assigned Leads</h2>
+          <span class="call-badge assigned-badge" id="assignedBadge">0</span>
+        </div>
+        <div class="call-list" id="assignedList"></div>
+      </div>
 
       <div class="call-today-section">
-        <div class="call-today-header">
+        <div class="section-hdr">
           <h2>Call Today</h2>
           <span class="call-badge" id="callBadge">0</span>
         </div>
@@ -394,7 +435,7 @@
         </div>
       </div>
 
-      <div class="add-form">
+      <div class="add-form" id="addForm">
         <h2>Log an email sent</h2>
         <div class="form-row">
           <input type="text" class="form-input" id="nameInput" placeholder="Contact name..." maxlength="60" />
@@ -414,22 +455,19 @@
       </div>
 
       <div class="section-header">
-        <span class="section-title">All Contacts</span>
+        <span class="section-title" id="allContactsTitle">All Contacts</span>
       </div>
       <div class="pipeline-list" id="pipelineList">
         <div class="loading">Loading your contacts...</div>
       </div>
-
     </div>
 
     <!-- EXPORT TAB -->
     <div class="tab-panel" id="tab-export">
-
       <div style="background:var(--green-dark);color:white;border-radius:16px;padding:20px 22px;margin-bottom:20px;font-size:0.95rem;line-height:1.7;box-shadow:0 4px 20px rgba(26,122,60,0.35);">
         <strong style="display:block;font-size:1rem;margin-bottom:8px;">How to get these into Apollo</strong>
         Export the CSV then go to Apollo and click Sequences, Create Sequence, Add Contacts, Upload CSV, Import Contacts. Then drag it in it makes a list. LFG
       </div>
-
       <div class="export-header">
         <div class="export-header-left">
           <label class="select-all-label">
@@ -438,15 +476,25 @@
           </label>
           <span class="selected-count" id="selectedCount">0 selected</span>
         </div>
-        <button class="export-btn" id="exportBtn" onclick="exportCSV()" disabled>
-          Export Sequence CSV
-        </button>
+        <button class="export-btn" id="exportBtn" onclick="exportCSV()" disabled>Export Sequence CSV</button>
       </div>
-
-      <div class="export-list" id="exportList">
-        <div class="loading">Loading...</div>
+      <div id="exportAssignedSection" style="display:none">
+        <div class="export-section-label" style="color:var(--blue-dark);">Assigned Leads</div>
+        <div class="export-list" id="exportAssignedList"></div>
+        <div class="export-section-label" style="margin-top:16px;">My Contacts</div>
       </div>
+      <div class="export-list" id="exportList"><div class="loading">Loading...</div></div>
+    </div>
 
+    <!-- ADMIN TAB -->
+    <div class="tab-panel" id="tab-admin">
+      <div style="background:var(--white);border-radius:16px;padding:20px 22px;margin-bottom:24px;box-shadow:var(--shadow);">
+        <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:4px;">Admin</div>
+        <div style="font-size:0.95rem;color:var(--text-dark);">Set each person's role. They'll see their dashboard once assigned.</div>
+      </div>
+      <div class="admin-user-list" id="adminUserList">
+        <div class="loading">Loading users...</div>
+      </div>
     </div>
 
   </main>
@@ -455,14 +503,20 @@
 <div id="toast"></div>
 
 <script>
+  const ADMIN_EMAIL = 'liam@pump.co';
   const SUPABASE_URL = 'https://gypurcvjlzmbhzdszugx.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_TKBfJlQvpwwMtc_ZLUKcRQ_BUtCVQyu';
   const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let currentUser = null;
+  let currentProfile = null;
   let contacts = [];
+  let assignedContacts = [];
+  let bdrs = [];
   let selectedIds = new Set();
   let selectedTemp = '';
+
+  const isAdmin = () => currentUser?.email === ADMIN_EMAIL;
 
   function selectTemp(btn) {
     const already = btn.classList.contains('selected');
@@ -472,8 +526,7 @@
   }
 
   // ── AUTH ──
-
-  function switchTab(tab) {
+  function switchAuthTab(tab) {
     document.querySelectorAll('.auth-tab').forEach((t, i) => {
       t.classList.toggle('active', (i === 0) === (tab === 'login'));
     });
@@ -487,13 +540,11 @@
     el.textContent = msg; el.style.display = 'block';
     document.getElementById('authSuccess').style.display = 'none';
   }
-
   function showAuthSuccess(msg) {
     const el = document.getElementById('authSuccess');
     el.textContent = msg; el.style.display = 'block';
     document.getElementById('authError').style.display = 'none';
   }
-
   function clearAuthMessages() {
     document.getElementById('authError').style.display = 'none';
     document.getElementById('authSuccess').style.display = 'none';
@@ -511,56 +562,115 @@
   }
 
   async function signUp() {
+    const name = document.getElementById('signupName').value.trim();
     const email = document.getElementById('signupEmail').value.trim();
     const password = document.getElementById('signupPassword').value;
+    if (!name) { showAuthError('Please enter your name.'); return; }
     if (!email || !password) { showAuthError('Please fill in all fields.'); return; }
     if (password.length < 6) { showAuthError('Password must be at least 6 characters.'); return; }
     const btn = document.getElementById('signupBtn');
     btn.disabled = true; btn.textContent = 'Creating account...';
-    const { error } = await db.auth.signUp({ email, password });
+    const { data, error } = await db.auth.signUp({ email, password });
+    if (error) { showAuthError(error.message); btn.disabled = false; btn.textContent = 'Create Account'; return; }
+    await db.from('profiles').insert({ id: data.user.id, display_name: name, role: null });
     btn.disabled = false; btn.textContent = 'Create Account';
-    if (error) showAuthError(error.message);
-    else showAuthSuccess('Account created! You can now sign in.');
+    showAuthSuccess('Account created! Sign in and wait for your admin to assign your role.');
   }
 
   async function signOut() {
     await db.auth.signOut();
+    currentProfile = null; bdrs = []; contacts = []; assignedContacts = [];
+    document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('pendingScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'none';
   }
 
-  db.auth.onAuthStateChange((event, session) => {
+  // ── AUTH STATE ──
+  db.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user ?? null;
     if (currentUser) {
-      document.getElementById('authScreen').style.display = 'none';
-      document.getElementById('appScreen').style.display = 'block';
-      document.getElementById('userEmail').textContent = currentUser.email;
-      document.getElementById('dateInput').value = todayStr();
-      loadContacts();
+      await bootApp();
     } else {
       document.getElementById('authScreen').style.display = 'flex';
+      document.getElementById('pendingScreen').style.display = 'none';
       document.getElementById('appScreen').style.display = 'none';
-      contacts = [];
     }
   });
 
-  // ── APP TABS ──
+  async function bootApp() {
+    document.getElementById('userEmail').textContent = currentUser.email;
 
+    // Admin bypasses profile check
+    if (isAdmin()) {
+      showApp('admin');
+      await loadProfile();
+      await loadContacts();
+      return;
+    }
+
+    await loadProfile();
+
+    if (!currentProfile?.role) {
+      // Pending — no role assigned yet
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('pendingScreen').style.display = 'flex';
+      document.getElementById('appScreen').style.display = 'none';
+      return;
+    }
+
+    showApp(currentProfile.role);
+    await loadContacts();
+  }
+
+  function showApp(role) {
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('pendingScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+
+    // Role badge
+    const badge = document.getElementById('roleBadge');
+    if (isAdmin()) {
+      badge.textContent = 'ADMIN'; badge.className = 'role-badge admin';
+    } else {
+      badge.textContent = role.toUpperCase(); badge.className = 'role-badge ' + role;
+    }
+
+    // Admin nav tab
+    document.getElementById('adminNavTab').style.display = isAdmin() ? '' : 'none';
+
+    // AE: show add form; BDR: hide it
+    const isAE = role === 'ae' || isAdmin();
+    document.getElementById('addForm').style.display = isAE ? '' : 'none';
+    document.getElementById('allContactsTitle').textContent = role === 'bdr' ? 'My Contacts' : 'All Contacts';
+    document.getElementById('dateInput').value = todayStr();
+  }
+
+  async function loadProfile() {
+    const { data } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
+    currentProfile = data;
+    if (currentProfile?.role === 'ae' || isAdmin()) {
+      const { data: bdrData } = await db.from('profiles').select('*').eq('role', 'bdr');
+      bdrs = bdrData || [];
+    }
+  }
+
+  // ── APP TABS ──
   function switchAppTab(tab, btn) {
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + tab).classList.add('active');
     if (tab === 'export') renderExport();
+    if (tab === 'admin') loadAdminUsers();
   }
 
   // ── DATA ──
-
   async function loadContacts() {
-    const { data, error } = await db
-      .from('contacts')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error } = await db.from('contacts').select('*').order('created_at', { ascending: false });
     if (error) { showToast('Error loading contacts.'); return; }
-    contacts = data || [];
+    const all = data || [];
+    contacts = all.filter(c => c.user_id === currentUser.id);
+    assignedContacts = all.filter(c => c.assigned_to === currentUser.id);
     render();
   }
 
@@ -575,18 +685,14 @@
     const email_date = dateInput.value || todayStr();
     if (!name) { nameInput.focus(); showToast('Enter a contact name.'); return; }
 
-    const { data, error } = await db
-      .from('contacts')
+    const { data, error } = await db.from('contacts')
       .insert({ name, email, notes, email_date, called: false, user_id: currentUser.id, temperature: selectedTemp || null })
-      .select()
-      .single();
+      .select().single();
 
     if (error) { showToast('Error adding contact.'); return; }
     contacts.unshift(data);
     render();
-    nameInput.value = '';
-    emailInput.value = '';
-    notesInput.value = '';
+    nameInput.value = ''; emailInput.value = ''; notesInput.value = '';
     dateInput.value = todayStr();
     document.querySelectorAll('.temp-btn').forEach(b => b.classList.remove('selected'));
     selectedTemp = '';
@@ -594,8 +700,18 @@
     showToast('Contact added!');
   }
 
-  async function toggleCalled(id) {
+  async function assignContact(id, bdrId) {
+    const val = bdrId || null;
+    const { error } = await db.from('contacts').update({ assigned_to: val }).eq('id', id);
+    if (error) { showToast('Error assigning.'); return; }
     const c = contacts.find(c => c.id === id);
+    if (c) { c.assigned_to = val; render(); }
+    showToast(val ? 'Lead assigned!' : 'Assignment removed.');
+  }
+
+  async function toggleCalled(id) {
+    const all = [...contacts, ...assignedContacts];
+    const c = all.find(c => c.id === id);
     if (!c) return;
     const { error } = await db.from('contacts').update({ called: !c.called }).eq('id', id);
     if (error) { showToast('Error updating.'); return; }
@@ -613,20 +729,58 @@
     showToast('Removed.');
   }
 
-  // ── CONTACTS RENDER ──
+  // ── ADMIN ──
+  async function loadAdminUsers() {
+    const list = document.getElementById('adminUserList');
+    list.innerHTML = '<div class="loading">Loading users...</div>';
+    const { data, error } = await db.from('profiles').select('*').order('display_name');
+    if (error) { list.innerHTML = '<div class="loading">Error loading users.</div>'; return; }
+    if (!data.length) { list.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>No users yet.</p></div>'; return; }
 
-  function todayStr() { return new Date().toISOString().split('T')[0]; }
+    list.innerHTML = data.map(u => {
+      const roleClass = u.role ? 'role-' + u.role : 'role-pending';
+      return `
+        <div class="admin-user-item">
+          <div class="admin-user-info">
+            <div class="admin-user-name">${escapeHtml(u.display_name || 'Unknown')}</div>
+            <div class="admin-user-email" id="email-${u.id}">Loading...</div>
+          </div>
+          <select class="admin-role-select ${roleClass}" onchange="setUserRole('${u.id}', this)">
+            <option value="" ${!u.role ? 'selected' : ''}>Pending</option>
+            <option value="ae" ${u.role === 'ae' ? 'selected' : ''}>AE</option>
+            <option value="bdr" ${u.role === 'bdr' ? 'selected' : ''}>BDR</option>
+          </select>
+        </div>`;
+    }).join('');
 
-  function callDateFor(emailDate) {
-    const d = new Date(emailDate + 'T00:00:00');
-    d.setDate(d.getDate() + 7);
-    return d.toISOString().split('T')[0];
+    // Load emails via auth (admin only sees own email, so we store it in profiles or show what we have)
+    // Since we can't query auth.users from client, show display_name only — email not accessible from client SDK
+    data.forEach(u => {
+      const el = document.getElementById('email-' + u.id);
+      if (el) el.textContent = u.id === currentUser.id ? currentUser.email : '(sign-in email hidden)';
+    });
   }
 
+  async function setUserRole(userId, select) {
+    const role = select.value || null;
+    const { error } = await db.from('profiles').update({ role }).eq('id', userId);
+    if (error) { showToast('Error updating role.'); return; }
+    select.className = 'admin-role-select ' + (role ? 'role-' + role : 'role-pending');
+    showToast('Role updated!');
+    // Reload BDRs in case list changed
+    const { data } = await db.from('profiles').select('*').eq('role', 'bdr');
+    bdrs = data || [];
+  }
+
+  // ── RENDER HELPERS ──
+  function todayStr() { return new Date().toISOString().split('T')[0]; }
+  function callDateFor(d) {
+    const dt = new Date(d + 'T00:00:00'); dt.setDate(dt.getDate() + 7);
+    return dt.toISOString().split('T')[0];
+  }
   function formatDate(str) {
     return new Date(str + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
-
   function formatExportDate(str) {
     const d = new Date(str + 'T00:00:00');
     const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
@@ -634,94 +788,123 @@
     const ago = daysAgo === 0 ? 'today' : daysAgo === 1 ? '1 day ago' : `${daysAgo} days ago`;
     return `${dayName} (${ago})`;
   }
-
-  function daysUntil(dateStr) {
-    const today = new Date(todayStr() + 'T00:00:00');
-    const target = new Date(dateStr + 'T00:00:00');
-    return Math.round((target - today) / 86400000);
+  function daysUntil(str) {
+    return Math.round((new Date(str + 'T00:00:00') - new Date(todayStr() + 'T00:00:00')) / 86400000);
+  }
+  function escapeHtml(str) {
+    return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  function escapeHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  function pipelineItemHtml(c, isAssigned) {
+    const callDate = callDateFor(c.email_date);
+    const diff = daysUntil(callDate);
+    let statusClass = '', pillClass, pillLabel;
+    if (isAssigned) {
+      pillClass = 'pill-assigned'; pillLabel = 'Assigned to you'; statusClass = 'assigned-own';
+    } else if (c.called) {
+      pillClass = 'pill-called'; pillLabel = 'Called';
+    } else if (diff < 0) {
+      statusClass = 'overdue'; pillClass = 'pill-overdue'; pillLabel = `${Math.abs(diff)}d overdue`;
+    } else if (diff <= 2) {
+      statusClass = 'upcoming'; pillClass = 'pill-upcoming'; pillLabel = diff === 0 ? 'Today' : `In ${diff}d`;
+    } else {
+      pillClass = 'pill-soon'; pillLabel = `In ${diff}d`;
+    }
+
+    let assignHtml = '';
+    if ((currentProfile?.role === 'ae' || isAdmin()) && bdrs.length > 0) {
+      const cur = c.assigned_to || '';
+      const opts = bdrs.map(b => `<option value="${b.id}" ${b.id === cur ? 'selected' : ''}>${escapeHtml(b.display_name)}</option>`).join('');
+      assignHtml = `<select class="assign-select ${cur ? 'assigned' : ''}" onchange="assignContact('${c.id}', this.value)" onclick="event.stopPropagation()">
+        <option value="">Assign to BDR</option>${opts}
+      </select>`;
+    }
+
+    const deleteHtml = !isAssigned ? `<button class="delete-btn" onclick="deleteContact('${c.id}')">✕</button>` : '';
+
+    return `
+      <div class="pipeline-item ${statusClass}">
+        <div class="pipeline-info">
+          <div class="pipeline-name">${c.temperature ? `<span style="margin-right:5px;">${c.temperature}</span>` : ''}${escapeHtml(c.name)}</div>
+          <div class="pipeline-dates">
+            <span>📧 Emailed ${formatDate(c.email_date)}</span>
+            <span>🤙 Call ${formatDate(callDate)}</span>
+            ${c.email ? `<span>✉️ ${escapeHtml(c.email)}</span>` : ''}
+          </div>
+          ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:4px;">${escapeHtml(c.notes)}</div>` : ''}
+        </div>
+        <span class="status-pill ${pillClass}">${pillLabel}</span>
+        ${assignHtml}
+        ${deleteHtml}
+      </div>`;
   }
 
   function render() {
     const today = todayStr();
-    const callToday = contacts.filter(c => callDateFor(c.email_date) === today);
-    const rest = contacts.filter(c => callDateFor(c.email_date) !== today);
+    const isBDR = currentProfile?.role === 'bdr';
+
+    // Assigned Leads (BDR)
+    const assignedSection = document.getElementById('assignedSection');
+    if (isBDR) {
+      assignedSection.style.display = '';
+      document.getElementById('assignedBadge').textContent = assignedContacts.filter(c => !c.called).length;
+      document.getElementById('assignedList').innerHTML = assignedContacts.length
+        ? assignedContacts.map(c => `
+            <div class="call-item ${c.called ? 'called' : ''}">
+              <button class="call-check" onclick="toggleCalled('${c.id}')">✓</button>
+              <div class="call-name">${c.temperature ? c.temperature + ' ' : ''}${escapeHtml(c.name)}</div>
+              <div class="call-meta">${c.email ? escapeHtml(c.email) : 'No email'}</div>
+            </div>`).join('')
+        : '<div class="empty-call">No assigned leads yet.</div>';
+    } else {
+      assignedSection.style.display = 'none';
+    }
 
     // Call Today
+    const callToday = contacts.filter(c => callDateFor(c.email_date) === today);
+    const rest = contacts.filter(c => callDateFor(c.email_date) !== today);
     document.getElementById('callBadge').textContent = callToday.filter(c => !c.called).length;
-    const callList = document.getElementById('callList');
-    if (callToday.length === 0) {
-      callList.innerHTML = '<div class="empty-call">No one to call today here, rip more dials</div>';
-    } else {
-      callList.innerHTML = callToday.map(c => `
-        <div class="call-item ${c.called ? 'called' : ''}">
-          <button class="call-check" onclick="toggleCalled('${c.id}')">✓</button>
-          <div class="call-name">${escapeHtml(c.name)}</div>
-          <div class="call-meta">Emailed ${formatDate(c.email_date)}</div>
-        </div>
-      `).join('');
-    }
+    document.getElementById('callList').innerHTML = callToday.length
+      ? callToday.map(c => `
+          <div class="call-item ${c.called ? 'called' : ''}">
+            <button class="call-check" onclick="toggleCalled('${c.id}')">✓</button>
+            <div class="call-name">${c.temperature ? c.temperature + ' ' : ''}${escapeHtml(c.name)}</div>
+            <div class="call-meta">Emailed ${formatDate(c.email_date)}</div>
+          </div>`).join('')
+      : '<div class="empty-call">No one to call today here, rip more dials</div>';
 
-    // All contacts
+    // Pipeline
     const sorted = [...rest].sort((a, b) => callDateFor(b.email_date).localeCompare(callDateFor(a.email_date)));
     const pipeline = document.getElementById('pipelineList');
-
     if (contacts.length === 0) {
-      pipeline.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>Log an email above to get started.</p></div>`;
-      return;
-    }
-    if (sorted.length === 0) {
+      pipeline.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>${isBDR ? 'No contacts yet.' : 'Log an email above to get started.'}</p></div>`;
+    } else if (sorted.length === 0) {
       pipeline.innerHTML = `<div class="empty-state"><div class="empty-icon">🌿</div><p>Everyone is in the "Call Today" list.</p></div>`;
-      return;
+    } else {
+      pipeline.innerHTML = sorted.map(c => pipelineItemHtml(c, false)).join('');
     }
-
-    pipeline.innerHTML = sorted.map(c => {
-      const callDate = callDateFor(c.email_date);
-      const diff = daysUntil(callDate);
-      let statusClass, pillClass, pillLabel;
-      if (c.called) {
-        statusClass = ''; pillClass = 'pill-called'; pillLabel = 'Called';
-      } else if (diff < 0) {
-        statusClass = 'overdue'; pillClass = 'pill-overdue'; pillLabel = `${Math.abs(diff)}d overdue`;
-      } else if (diff <= 2) {
-        statusClass = 'upcoming'; pillClass = 'pill-upcoming'; pillLabel = diff === 0 ? 'Today' : `In ${diff}d`;
-      } else {
-        statusClass = ''; pillClass = 'pill-soon'; pillLabel = `In ${diff}d`;
-      }
-      return `
-        <div class="pipeline-item ${statusClass}">
-          <div class="pipeline-info">
-            <div class="pipeline-name">${c.temperature ? `<span style="margin-right:5px;">${c.temperature}</span>` : ''}${escapeHtml(c.name)}</div>
-            <div class="pipeline-dates">
-              <span>📧 Emailed ${formatDate(c.email_date)}</span>
-              <span>🤙 Call ${formatDate(callDate)}</span>
-              ${c.email ? `<span>✉️ ${escapeHtml(c.email)}</span>` : ''}
-            </div>
-            ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:4px;">${escapeHtml(c.notes)}</div>` : ''}
-          </div>
-          <span class="status-pill ${pillClass}">${pillLabel}</span>
-          <button class="delete-btn" onclick="deleteContact('${c.id}')">✕</button>
-        </div>
-      `;
-    }).join('');
   }
 
   // ── EXPORT ──
-
   function renderExport() {
-    const list = document.getElementById('exportList');
-    if (contacts.length === 0) {
-      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>No contacts to export yet.</p></div>`;
-      updateExportUI();
-      return;
+    const isBDR = currentProfile?.role === 'bdr';
+    const assignedSec = document.getElementById('exportAssignedSection');
+    if (isBDR && assignedContacts.length > 0) {
+      assignedSec.style.display = '';
+      document.getElementById('exportAssignedList').innerHTML = assignedContacts.map(c => exportItemHtml(c, true)).join('');
+    } else {
+      assignedSec.style.display = 'none';
     }
+    const list = document.getElementById('exportList');
+    list.innerHTML = contacts.length
+      ? [...contacts].sort((a, b) => b.email_date.localeCompare(a.email_date)).map(c => exportItemHtml(c, false)).join('')
+      : `<div class="empty-state"><div class="empty-icon">📋</div><p>No contacts to export yet.</p></div>`;
+    updateExportUI();
+  }
 
-    const sorted = [...contacts].sort((a, b) => b.email_date.localeCompare(a.email_date));
-    list.innerHTML = sorted.map(c => `
-      <div class="export-item ${selectedIds.has(c.id) ? 'selected' : ''}" onclick="toggleSelect('${c.id}')">
+  function exportItemHtml(c, isAssigned) {
+    return `
+      <div class="export-item ${isAssigned ? 'is-assigned' : ''} ${selectedIds.has(c.id) ? 'selected' : ''}" onclick="toggleSelect('${c.id}')">
         <div class="export-checkbox">✓</div>
         <div class="export-info">
           <div class="export-name">${c.temperature ? `<span style="margin-right:5px;">${c.temperature}</span>` : ''}${escapeHtml(c.name)}</div>
@@ -729,60 +912,44 @@
           ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:3px;">${escapeHtml(c.notes)}</div>` : ''}
         </div>
         <div class="export-date">Day email sent:<br/><strong>${formatExportDate(c.email_date)}</strong></div>
-      </div>
-    `).join('');
-
-    updateExportUI();
+      </div>`;
   }
 
   function toggleSelect(id) {
-    if (selectedIds.has(id)) selectedIds.delete(id);
-    else selectedIds.add(id);
+    if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
     renderExport();
   }
-
   function toggleSelectAll() {
-    const allIds = contacts.map(c => c.id);
-    if (selectedIds.size === allIds.length) {
-      selectedIds.clear();
-    } else {
-      allIds.forEach(id => selectedIds.add(id));
-    }
+    const allIds = [...contacts, ...assignedContacts].map(c => c.id);
+    if (selectedIds.size === allIds.length) selectedIds.clear();
+    else allIds.forEach(id => selectedIds.add(id));
     renderExport();
   }
-
   function updateExportUI() {
+    const total = [...contacts, ...assignedContacts].length;
     const count = selectedIds.size;
     document.getElementById('selectedCount').textContent = `${count} selected`;
     document.getElementById('exportBtn').disabled = count === 0;
-    document.getElementById('selectAllChk').checked = contacts.length > 0 && selectedIds.size === contacts.length;
-    document.getElementById('selectAllChk').indeterminate = selectedIds.size > 0 && selectedIds.size < contacts.length;
+    document.getElementById('selectAllChk').checked = total > 0 && count === total;
+    document.getElementById('selectAllChk').indeterminate = count > 0 && count < total;
   }
-
   function exportCSV() {
-    const selected = contacts.filter(c => selectedIds.has(c.id));
-    if (selected.length === 0) return;
-
+    const all = [...contacts, ...assignedContacts];
+    const selected = all.filter(c => selectedIds.has(c.id));
+    if (!selected.length) return;
     const rows = [['First Name', 'Last Name', 'Email']];
     selected.forEach(c => {
       const parts = c.name.trim().split(/\s+/);
-      const firstName = parts[0] || '';
-      const lastName = parts.slice(1).join(' ') || '';
-      rows.push([firstName, lastName, c.email || '']);
+      rows.push([parts[0] || '', parts.slice(1).join(' ') || '', c.email || '']);
     });
-
-    const csv = rows.map(r => r.map(cell => `"${(cell || '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    const csv = rows.map(r => r.map(cell => `"${(cell||'').replace(/"/g,'""')}"`).join(',')).join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `apollo-sequence-${todayStr()}.csv`;
-    a.click();
+    a.href = url; a.download = `apollo-sequence-${todayStr()}.csv`; a.click();
     URL.revokeObjectURL(url);
     showToast(`Exported ${selected.length} contact${selected.length > 1 ? 's' : ''}!`);
   }
-
-  // ── UTILS ──
 
   function showToast(msg) {
     const t = document.getElementById('toast');

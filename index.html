@@ -541,6 +541,25 @@
   const SUPABASE_URL = 'https://gypurcvjlzmbhzdszugx.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_TKBfJlQvpwwMtc_ZLUKcRQ_BUtCVQyu';
   
+  // Clear any corrupted auth state on page load
+  console.log('Clearing any corrupted auth state...');
+  try {
+    // Clear old auth sessions
+    const keysToDelete = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.includes('supabase') || key.includes('auth') || key.startsWith('pump-auth'))) {
+        keysToDelete.push(key);
+      }
+    }
+    keysToDelete.forEach(k => {
+      console.log('Removing old auth state:', k);
+      localStorage.removeItem(k);
+    });
+  } catch (e) {
+    console.warn('Could not clear localStorage:', e);
+  }
+  
   console.log('Initializing Supabase with URL:', SUPABASE_URL);
   console.log('Supabase library available:', typeof supabase !== 'undefined');
   
@@ -669,16 +688,37 @@
   }
 
   function signOut() {
-    // Clear all auth state from localStorage immediately (handles broken lock states)
+    console.log('Signing out and clearing all auth state...');
+    // Clear all auth state from localStorage immediately
     try {
-      Object.keys(localStorage)
-        .filter(k => k.startsWith('pump-auth') || k.startsWith('sb-') || k.includes('supabase'))
-        .forEach(k => localStorage.removeItem(k));
+      const keysToDelete = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('supabase') || key.includes('auth') || key.startsWith('pump') || key.startsWith('sb-'))) {
+          keysToDelete.push(key);
+        }
+      }
+      keysToDelete.forEach(k => {
+        console.log('Removing:', k);
+        localStorage.removeItem(k);
+      });
     } catch(e) {}
+    
+    // Also clear sessionStorage
+    try {
+      sessionStorage.clear();
+    } catch(e) {}
+    
     // Fire signOut in background, don't await it
-    db.auth.signOut().catch(() => {});
-    // Reload the page for a clean state
-    window.location.reload();
+    db.auth.signOut().catch(err => {
+      console.error('Error signing out from Supabase:', err);
+    });
+    
+    // Hard reload to get completely clean state
+    console.log('Reloading page...');
+    setTimeout(() => {
+      window.location.href = window.location.pathname;
+    }, 100);
   }
 
   // ── AUTH STATE ──

@@ -1193,8 +1193,8 @@
     }
 
     // Call Today
-    const callToday = contacts.filter(c => callDateFor(c.email_date) === today);
-    const rest = contacts.filter(c => callDateFor(c.email_date) !== today);
+    const callToday = contacts.filter(c => callDateFor(c.email_date) <= today);
+    const rest = contacts.filter(c => callDateFor(c.email_date) > today);
     document.getElementById('callBadge').textContent = callToday.filter(c => !c.called).length;
     document.getElementById('callList').innerHTML = callToday.length
       ? callToday.map(c => `

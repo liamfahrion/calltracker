@@ -1194,7 +1194,7 @@
 
     // Call Today
     const callToday = contacts.filter(c => callDateFor(c.email_date) <= today);
-    const rest = contacts.filter(c => callDateFor(c.email_date) > today);
+    const rest = contacts; // show all in pipeline, including overdue
     document.getElementById('callBadge').textContent = callToday.filter(c => !c.called).length;
     document.getElementById('callList').innerHTML = callToday.length
       ? callToday.map(c => `
@@ -1241,12 +1241,15 @@
     
     // Check if over 7 days ago
     const daysSinceEmail = Math.abs(daysUntil(c.email_date));
-    const dateDisplay = daysSinceEmail > 7 
+    const isOverdue = daysSinceEmail > 7;
+    const dateDisplay = isOverdue 
       ? '<span style="color:#c0392b;font-weight:700;">EMAILED OVER 7 DAYS AGO</span>'
       : formatExportDate(c.email_date);
     
+    const overdueStyle = isOverdue ? 'background-color: #fde8e8; border-left: 4px solid #e74c3c;' : '';
+    
     return `
-      <div class="export-item ${isAssigned ? 'is-assigned' : ''} ${selectedIds.has(c.id) ? 'selected' : ''}" onclick="toggleSelect('${c.id}')">
+      <div class="export-item ${isAssigned ? 'is-assigned' : ''} ${selectedIds.has(c.id) ? 'selected' : ''}" onclick="toggleSelect('${c.id}')" style="${overdueStyle}">
         <div class="export-checkbox">✓</div>
         <div class="export-info">
           <div class="export-name">${c.temperature ? `<span style="margin-right:5px;">${c.temperature}</span>` : ''}${escapeHtml(c.name)}</div>

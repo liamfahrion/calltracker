@@ -304,6 +304,15 @@
     }
     #toast.show { transform: translateX(-50%) translateY(0); }
 
+    .temp-btn {
+      width: 38px; height: 38px; border-radius: 8px; border: 2px solid var(--green-light);
+      background: white; font-size: 18px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .temp-btn:hover { border-color: var(--green-main); transform: scale(1.1); }
+    .temp-btn.selected { border-color: var(--green-dark); background: var(--green-pale); box-shadow: 0 0 0 2px var(--green-main); }
+
     @media (max-width: 520px) {
       .date-input { width: 100%; }
       .user-email { display: none; }
@@ -393,8 +402,14 @@
           <input type="date" class="form-input date-input" id="dateInput" />
           <button class="add-btn" onclick="addContact()">+ Add</button>
         </div>
-        <div class="form-row" style="margin-top:10px;">
+        <div class="form-row" style="margin-top:10px;gap:8px;align-items:center;">
           <input type="text" class="form-input" id="notesInput" placeholder="Notes (optional)..." maxlength="200" />
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button type="button" class="temp-btn" data-temp="❄️" onclick="selectTemp(this)" title="Cold">❄️</button>
+            <button type="button" class="temp-btn" data-temp="🌤️" onclick="selectTemp(this)" title="Cool">🌤️</button>
+            <button type="button" class="temp-btn" data-temp="♨️" onclick="selectTemp(this)" title="Warm">♨️</button>
+            <button type="button" class="temp-btn" data-temp="🔥" onclick="selectTemp(this)" title="Hot">🔥</button>
+          </div>
         </div>
       </div>
 
@@ -447,6 +462,14 @@
   let currentUser = null;
   let contacts = [];
   let selectedIds = new Set();
+  let selectedTemp = '';
+
+  function selectTemp(btn) {
+    const already = btn.classList.contains('selected');
+    document.querySelectorAll('.temp-btn').forEach(b => b.classList.remove('selected'));
+    if (!already) { btn.classList.add('selected'); selectedTemp = btn.dataset.temp; }
+    else selectedTemp = '';
+  }
 
   // ── AUTH ──
 
@@ -554,7 +577,7 @@
 
     const { data, error } = await db
       .from('contacts')
-      .insert({ name, email, notes, email_date, called: false, user_id: currentUser.id })
+      .insert({ name, email, notes, email_date, called: false, user_id: currentUser.id, temperature: selectedTemp || null })
       .select()
       .single();
 
@@ -565,6 +588,8 @@
     emailInput.value = '';
     notesInput.value = '';
     dateInput.value = todayStr();
+    document.querySelectorAll('.temp-btn').forEach(b => b.classList.remove('selected'));
+    selectedTemp = '';
     nameInput.focus();
     showToast('Contact added!');
   }
@@ -600,6 +625,14 @@
 
   function formatDate(str) {
     return new Date(str + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function formatExportDate(str) {
+    const d = new Date(str + 'T00:00:00');
+    const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+    const daysAgo = Math.round((new Date(todayStr() + 'T00:00:00') - d) / 86400000);
+    const ago = daysAgo === 0 ? 'today' : daysAgo === 1 ? '1 day ago' : `${daysAgo} days ago`;
+    return `${dayName} (${ago})`;
   }
 
   function daysUntil(dateStr) {
@@ -661,12 +694,13 @@
       return `
         <div class="pipeline-item ${statusClass}">
           <div class="pipeline-info">
-            <div class="pipeline-name">${escapeHtml(c.name)}</div>
+            <div class="pipeline-name">${c.temperature ? `<span style="margin-right:5px;">${c.temperature}</span>` : ''}${escapeHtml(c.name)}</div>
             <div class="pipeline-dates">
               <span>📧 Emailed ${formatDate(c.email_date)}</span>
               <span>🤙 Call ${formatDate(callDate)}</span>
               ${c.email ? `<span>✉️ ${escapeHtml(c.email)}</span>` : ''}
             </div>
+            ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:4px;">${escapeHtml(c.notes)}</div>` : ''}
           </div>
           <span class="status-pill ${pillClass}">${pillLabel}</span>
           <button class="delete-btn" onclick="deleteContact('${c.id}')">✕</button>
@@ -690,11 +724,11 @@
       <div class="export-item ${selectedIds.has(c.id) ? 'selected' : ''}" onclick="toggleSelect('${c.id}')">
         <div class="export-checkbox">✓</div>
         <div class="export-info">
-          <div class="export-name">${escapeHtml(c.name)}</div>
+          <div class="export-name">${c.temperature ? `<span style="margin-right:5px;">${c.temperature}</span>` : ''}${escapeHtml(c.name)}</div>
           <div class="export-email">${c.email ? escapeHtml(c.email) : '<span style="opacity:0.5">No email on file</span>'}</div>
           ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:3px;">${escapeHtml(c.notes)}</div>` : ''}
         </div>
-        <div class="export-date">Day email sent:<br/><strong>${formatDate(c.email_date)}</strong></div>
+        <div class="export-date">Day email sent:<br/><strong>${formatExportDate(c.email_date)}</strong></div>
       </div>
     `).join('');
 

@@ -1235,9 +1235,9 @@
   }
 
   function exportItemHtml(c, isAssigned) {
-    // Only show AE name for contacts assigned TO this user by an AE
-    const ownerInfo = isAssigned && profilesMap[c.user_id]
-      ? `<div style="font-size:0.78rem;color:var(--blue-dark);margin-top:3px;">Assigned by ${escapeHtml(profilesMap[c.user_id])}</div>`
+    // Show AE name for contacts assigned by AE
+    const ownerInfo = isAssigned 
+      ? `<div style="font-size:0.78rem;color:var(--blue-dark);margin-top:3px;font-weight:600;">Assigned by AE: ${escapeHtml(profilesMap[c.user_id] || 'Unknown')}</div>`
       : '';
     
     // Check if over 7 days ago
@@ -1255,8 +1255,8 @@
         <div class="export-info">
           <div class="export-name">${c.temperature ? `<span style="margin-right:5px;">${c.temperature}</span>` : ''}${escapeHtml(c.name)}</div>
           <div class="export-email">${c.email ? escapeHtml(c.email) : '<span style="opacity:0.5">No email on file</span>'}</div>
-          ${ownerInfo}
           ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:3px;">${escapeHtml(c.notes)}</div>` : ''}
+          ${ownerInfo}
         </div>
         <div class="export-date">Day email sent:<br/><strong>${dateDisplay}</strong></div>
       </div>`;

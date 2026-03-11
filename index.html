@@ -1238,6 +1238,13 @@
     const aeInfo = isAssigned && profilesMap[c.user_id]
       ? `<div style="font-size:0.78rem;color:var(--blue-dark);margin-top:3px;">Assigned by ${escapeHtml(profilesMap[c.user_id])}</div>`
       : '';
+    
+    // Check if over 7 days ago
+    const daysSinceEmail = Math.abs(daysUntil(c.email_date));
+    const dateDisplay = daysSinceEmail > 7 
+      ? '<span style="color:#c0392b;font-weight:700;">EMAILED OVER 7 DAYS AGO</span>'
+      : formatExportDate(c.email_date);
+    
     return `
       <div class="export-item ${isAssigned ? 'is-assigned' : ''} ${selectedIds.has(c.id) ? 'selected' : ''}" onclick="toggleSelect('${c.id}')">
         <div class="export-checkbox">✓</div>
@@ -1247,7 +1254,7 @@
           ${aeInfo}
           ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:3px;">${escapeHtml(c.notes)}</div>` : ''}
         </div>
-        <div class="export-date">Day email sent:<br/><strong>${formatExportDate(c.email_date)}</strong></div>
+        <div class="export-date">Day email sent:<br/><strong>${dateDisplay}</strong></div>
       </div>`;
   }
 

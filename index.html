@@ -579,12 +579,17 @@
     showAuthSuccess('Account created! Sign in and wait for your admin to assign your role.');
   }
 
-  async function signOut() {
-    await db.auth.signOut();
-    currentProfile = null; bdrs = []; contacts = []; assignedContacts = [];
-    document.getElementById('authScreen').style.display = 'flex';
-    document.getElementById('pendingScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display = 'none';
+  function signOut() {
+    // Clear all auth state from localStorage immediately (handles broken lock states)
+    try {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('pump-auth') || k.startsWith('sb-') || k.includes('supabase'))
+        .forEach(k => localStorage.removeItem(k));
+    } catch(e) {}
+    // Fire signOut in background, don't await it
+    db.auth.signOut().catch(() => {});
+    // Reload the page for a clean state
+    window.location.reload();
   }
 
   // ── AUTH STATE ──

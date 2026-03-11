@@ -1235,8 +1235,8 @@
   }
 
   function exportItemHtml(c, isAssigned) {
-    // Show who created/assigned this contact
-    const ownerInfo = profilesMap[c.user_id]
+    // Only show AE name for contacts assigned TO this user by an AE
+    const ownerInfo = isAssigned && profilesMap[c.user_id]
       ? `<div style="font-size:0.78rem;color:var(--blue-dark);margin-top:3px;">Assigned by ${escapeHtml(profilesMap[c.user_id])}</div>`
       : '';
     

@@ -506,7 +506,9 @@
   const ADMIN_EMAIL = 'liam@pump.co';
   const SUPABASE_URL = 'https://gypurcvjlzmbhzdszugx.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_TKBfJlQvpwwMtc_ZLUKcRQ_BUtCVQyu';
-  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { storageKey: 'pump-auth', detectSessionInUrl: false }
+  });
 
   let currentUser = null;
   let currentProfile = null;

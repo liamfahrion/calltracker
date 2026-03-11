@@ -510,6 +510,9 @@
           <select class="form-input" id="assignBdrSelect" style="max-width:220px;">
             <option value="">Select BDR...</option>
           </select>
+          <select class="form-input" id="assignAESelect" style="max-width:220px;">
+            <option value="">Who is assigning?</option>
+          </select>
           <button class="add-btn" onclick="addAssignedLead()">+ Assign</button>
         </div>
       </div>
@@ -587,6 +590,7 @@
   let contacts = [];
   let assignedContacts = [];
   let bdrs = [];
+  let aes = [];
   let selectedIds = new Set();
   let selectedTemp = '';
   let selectedAssignTemp = '';
@@ -849,6 +853,7 @@
       currentProfile = profs.find(p => p.id === currentUser.id) || null;
       if (currentProfile?.role === 'ae' || isAdmin()) {
         bdrs = profs.filter(p => p.role === 'bdr');
+        aes = profs.filter(p => p.role === 'ae');
       }
     } catch (err) {
       console.error('Error loading profile:', err);
@@ -933,21 +938,24 @@
     const notesInput = document.getElementById('assignNotesInput');
     const dateInput = document.getElementById('assignDateInput');
     const bdrSelect = document.getElementById('assignBdrSelect');
+    const aeSelect = document.getElementById('assignAESelect');
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
     const notes = notesInput.value.trim();
     const email_date = dateInput.value || todayStr();
     const assigned_to = bdrSelect.value;
+    const assigned_by_ae = aeSelect.value || currentUser.id;
     
-    console.log('Assign form values:', { name, email, notes, email_date, assigned_to, currentUserId: currentUser.id });
+    console.log('Assign form values:', { name, email, notes, email_date, assigned_to, assigned_by_ae });
     
     if (!name) { nameInput.focus(); showToast('Enter a contact name.'); return; }
     if (!assigned_to) { showToast('Select a BDR to assign.'); console.warn('No BDR selected'); return; }
+    if (!assigned_by_ae) { showToast('Select who is assigning.'); return; }
     
     try {
-      console.log('Inserting contact:', { name, email, notes, email_date, called: false, user_id: currentUser.id, temperature: selectedAssignTemp || null, assigned_to });
+      console.log('Inserting contact:', { name, email, notes, email_date, called: false, user_id: assigned_by_ae, temperature: selectedAssignTemp || null, assigned_to });
       const { data, error } = await db.from('contacts')
-        .insert({ name, email, notes, email_date, called: false, user_id: currentUser.id, temperature: selectedAssignTemp || null, assigned_to })
+        .insert({ name, email, notes, email_date, called: false, user_id: assigned_by_ae, temperature: selectedAssignTemp || null, assigned_to })
         .select().single();
       
       console.log('Insert response:', { data, error });
@@ -955,7 +963,7 @@
       if (error) throw error;
       contacts.unshift(data);
       nameInput.value = ''; emailInput.value = ''; notesInput.value = '';
-      dateInput.value = todayStr(); bdrSelect.value = '';
+      dateInput.value = todayStr(); bdrSelect.value = ''; aeSelect.value = '';
       document.querySelectorAll('#assignForm .temp-btn').forEach(b => b.classList.remove('selected'));
       selectedAssignTemp = '';
       nameInput.focus();
@@ -970,18 +978,25 @@
 
   function renderAssignTab() {
     // Populate BDR dropdown
-    const sel = document.getElementById('assignBdrSelect');
-    const cur = sel.value;
+    const bdrSel = document.getElementById('assignBdrSelect');
+    const bdrCur = bdrSel.value;
     
     if (bdrs.length === 0) {
-      sel.innerHTML = '<option value="">No BDRs available</option>';
+      bdrSel.innerHTML = '<option value="">No BDRs available</option>';
       const list = document.getElementById('myAssignedList');
       list.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><p>No BDRs have been set up yet. Ask your admin to assign team members as BDRs.</p></div>`;
       return;
     }
     
-    sel.innerHTML = '<option value="">Select BDR...</option>' +
-      bdrs.map(b => `<option value="${b.id}" ${b.id === cur ? 'selected' : ''}>${escapeHtml(b.display_name)}</option>`).join('');
+    bdrSel.innerHTML = '<option value="">Select BDR...</option>' +
+      bdrs.map(b => `<option value="${b.id}" ${b.id === bdrCur ? 'selected' : ''}>${escapeHtml(b.display_name)}</option>`).join('');
+    
+    // Populate AE dropdown (default to current user)
+    const aeSel = document.getElementById('assignAESelect');
+    const aeCur = aeSel.value;
+    aeSel.innerHTML = '<option value="">Who is assigning?</option>' +
+      aes.map(a => `<option value="${a.id}" ${a.id === (aeCur || currentUser.id) ? 'selected' : ''}>${escapeHtml(a.display_name)}</option>`).join('');
+    
     document.getElementById('assignDateInput').value = document.getElementById('assignDateInput').value || todayStr();
 
     // List leads I've assigned (contacts I created that have assigned_to set)
@@ -1157,6 +1172,7 @@
       const profs = allProfs || [];
       profs.forEach(p => { profilesMap[p.id] = p.display_name; });
       bdrs = profs.filter(p => p.role === 'bdr');
+      aes = profs.filter(p => p.role === 'ae');
     } catch (err) {
       console.error('Error setting user role:', err);
       showToast('Error updating role. Please try again.');

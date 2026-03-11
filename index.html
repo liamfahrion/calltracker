@@ -540,9 +540,16 @@
   const ADMIN_EMAIL = 'liam@pump.co';
   const SUPABASE_URL = 'https://gypurcvjlzmbhzdszugx.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_TKBfJlQvpwwMtc_ZLUKcRQ_BUtCVQyu';
+  
+  console.log('Initializing Supabase with URL:', SUPABASE_URL);
+  console.log('Supabase library available:', typeof supabase !== 'undefined');
+  
   const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { storageKey: 'pump-auth', detectSessionInUrl: false }
   });
+  
+  console.log('Supabase client created:', db ? 'success' : 'failed');
+  console.log('Auth available:', db?.auth ? 'yes' : 'no');
 
   let currentUser = null;
   let currentProfile = null;
@@ -676,8 +683,10 @@
 
   // ── AUTH STATE ──
   let booting = false;
-  db.auth.onAuthStateChange(async (event, session) => {
-    console.log('Auth state changed:', { event, userId: session?.user?.id });
+  console.log('Registering auth state change listener...');
+  
+  const unsubscribe = db.auth.onAuthStateChange(async (event, session) => {
+    console.log('🔐 Auth state changed:', { event, userId: session?.user?.id });
     currentUser = session?.user ?? null;
     if (currentUser) {
       if (booting) {
@@ -700,6 +709,8 @@
       document.getElementById('appScreen').style.display = 'none';
     }
   });
+  
+  console.log('Auth listener registered:', typeof unsubscribe);
 
   async function bootApp() {
     try {

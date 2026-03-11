@@ -601,15 +601,35 @@
     if (!email || !password) { showAuthError('Please enter your email and password.'); return; }
     const btn = document.getElementById('loginBtn');
     btn.disabled = true; btn.textContent = 'Signing in...';
+    
     try {
-      const { error } = await db.auth.signInWithPassword({ email, password });
+      console.log('Attempting sign in for:', email);
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
+      console.log('Sign in response:', { data, error });
+      
       if (error) {
         showAuthError(error.message || 'Sign in failed. Please try again.');
         btn.disabled = false; 
         btn.textContent = 'Sign In';
         return;
       }
-      // Success - auth state change will handle the rest
+      
+      // Success - wait for auth state change callback
+      console.log('Sign in successful, waiting for auth state change...');
+      
+      // Add timeout in case auth state change doesn't fire
+      const timeout = setTimeout(() => {
+        if (btn.textContent === 'Signing in...') {
+          console.warn('Auth state change did not fire, manually triggering');
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
+          // Try reloading to force auth state check
+          setTimeout(() => {
+            location.reload();
+          }, 1000);
+        }
+      }, 3000);
+      
     } catch (err) {
       console.error('Sign in error:', err);
       showAuthError(err.message || 'Sign in failed. Please try again.');
@@ -663,15 +683,24 @@
   // ── AUTH STATE ──
   let booting = false;
   db.auth.onAuthStateChange(async (event, session) => {
+    console.log('Auth state changed:', { event, userId: session?.user?.id });
     currentUser = session?.user ?? null;
     if (currentUser) {
-      if (booting) return; // prevent concurrent bootApp calls
+      if (booting) {
+        console.log('Already booting, skipping duplicate boot');
+        return;
+      }
       booting = true;
-      try { await bootApp(); } catch (err) {
+      try { 
+        await bootApp(); 
+      } catch (err) {
         console.error('Boot error:', err);
-      } finally { booting = false; }
+      } finally { 
+        booting = false; 
+      }
     } else {
       booting = false;
+      console.log('No user, showing auth screen');
       document.getElementById('authScreen').style.display = 'flex';
       document.getElementById('pendingScreen').style.display = 'none';
       document.getElementById('appScreen').style.display = 'none';

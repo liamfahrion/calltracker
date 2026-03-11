@@ -584,6 +584,10 @@
     const el = document.getElementById('authError');
     el.textContent = msg; el.style.display = 'block';
     document.getElementById('authSuccess').style.display = 'none';
+    // Make sure auth screen is visible
+    document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('pendingScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'none';
   }
   function showAuthSuccess(msg) {
     const el = document.getElementById('authSuccess');
@@ -601,9 +605,21 @@
     if (!email || !password) { showAuthError('Please enter your email and password.'); return; }
     const btn = document.getElementById('loginBtn');
     btn.disabled = true; btn.textContent = 'Signing in...';
-    const { error } = await db.auth.signInWithPassword({ email, password });
-    btn.disabled = false; btn.textContent = 'Sign In';
-    if (error) showAuthError(error.message);
+    try {
+      const { error } = await db.auth.signInWithPassword({ email, password });
+      if (error) {
+        showAuthError(error.message || 'Sign in failed. Please try again.');
+        btn.disabled = false; 
+        btn.textContent = 'Sign In';
+        return;
+      }
+      // Success - auth state change will handle the rest
+    } catch (err) {
+      console.error('Sign in error:', err);
+      showAuthError(err.message || 'Sign in failed. Please try again.');
+      btn.disabled = false; 
+      btn.textContent = 'Sign In';
+    }
   }
 
   async function signUp() {
@@ -615,11 +631,24 @@
     if (password.length < 6) { showAuthError('Password must be at least 6 characters.'); return; }
     const btn = document.getElementById('signupBtn');
     btn.disabled = true; btn.textContent = 'Creating account...';
-    const { data, error } = await db.auth.signUp({ email, password });
-    if (error) { showAuthError(error.message); btn.disabled = false; btn.textContent = 'Create Account'; return; }
-    await db.from('profiles').insert({ id: data.user.id, display_name: name, role: null });
-    btn.disabled = false; btn.textContent = 'Create Account';
-    showAuthSuccess('Account created! Sign in and wait for your admin to assign your role.');
+    try {
+      const { data, error } = await db.auth.signUp({ email, password });
+      if (error) { 
+        showAuthError(error.message || 'Sign up failed. Please try again.'); 
+        btn.disabled = false; 
+        btn.textContent = 'Create Account'; 
+        return; 
+      }
+      const { error: insertErr } = await db.from('profiles').insert({ id: data.user.id, display_name: name, role: null });
+      if (insertErr) throw insertErr;
+      btn.disabled = false; btn.textContent = 'Create Account';
+      showAuthSuccess('Account created! Sign in and wait for your admin to assign your role.');
+    } catch (err) {
+      console.error('Sign up error:', err);
+      showAuthError(err.message || 'Sign up failed. Please try again.');
+      btn.disabled = false; 
+      btn.textContent = 'Create Account';
+    }
   }
 
   function signOut() {
@@ -637,12 +666,18 @@
 
   // ── AUTH STATE ──
   let booting = false;
+  let authInitialized = false;
+  
   db.auth.onAuthStateChange(async (event, session) => {
+    authInitialized = true;
     currentUser = session?.user ?? null;
     if (currentUser) {
       if (booting) return; // prevent concurrent bootApp calls
       booting = true;
-      try { await bootApp(); } finally { booting = false; }
+      try { await bootApp(); } catch (err) {
+        console.error('Boot error:', err);
+        showAuthError('Failed to start app. Please refresh the page.');
+      } finally { booting = false; }
     } else {
       booting = false;
       document.getElementById('authScreen').style.display = 'flex';
@@ -651,29 +686,63 @@
     }
   });
 
+  // Ensure auth is initialized on page load
+  setTimeout(() => {
+    if (!authInitialized) {
+      console.warn('Auth not initialized after 2 seconds');
+      // Check if we can access auth
+      if (!db.auth) {
+        showAuthError('Failed to load authentication. Please refresh and check your connection.');
+      }
+    }
+  }, 2000);
+
   async function bootApp() {
-    document.getElementById('userEmail').textContent = currentUser.email;
+    try {
+      document.getElementById('userEmail').textContent = currentUser.email;
 
-    // Admin bypasses profile check
-    if (isAdmin()) {
-      showApp('admin');
-      await loadProfile();
-      await loadContacts();
-      return;
+      // Load profile first
+      try {
+        await loadProfile();
+      } catch (err) {
+        console.error('Profile load failed:', err);
+        if (isAdmin()) {
+          showApp('admin');
+        } else {
+          showAuthError('Failed to load profile. Please sign out and try again.');
+          return;
+        }
+      }
+
+      // Admin bypasses role check
+      if (isAdmin()) {
+        showApp('admin');
+        try {
+          await loadContacts();
+        } catch (err) {
+          console.error('Admin contacts load failed:', err);
+        }
+        return;
+      }
+
+      if (!currentProfile?.role) {
+        // Pending — no role assigned yet
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('pendingScreen').style.display = 'flex';
+        document.getElementById('appScreen').style.display = 'none';
+        return;
+      }
+
+      showApp(currentProfile.role);
+      try {
+        await loadContacts();
+      } catch (err) {
+        console.error('Contacts load failed:', err);
+      }
+    } catch (err) {
+      console.error('Boot failed:', err);
+      showAuthError('Failed to initialize app. Please refresh and try again.');
     }
-
-    await loadProfile();
-
-    if (!currentProfile?.role) {
-      // Pending — no role assigned yet
-      document.getElementById('authScreen').style.display = 'none';
-      document.getElementById('pendingScreen').style.display = 'flex';
-      document.getElementById('appScreen').style.display = 'none';
-      return;
-    }
-
-    showApp(currentProfile.role);
-    await loadContacts();
   }
 
   function showApp(role) {
@@ -701,12 +770,19 @@
   }
 
   async function loadProfile() {
-    const { data: allProfs } = await db.from('profiles').select('*');
-    const profs = allProfs || [];
-    profs.forEach(p => { profilesMap[p.id] = p.display_name; });
-    currentProfile = profs.find(p => p.id === currentUser.id) || null;
-    if (currentProfile?.role === 'ae' || isAdmin()) {
-      bdrs = profs.filter(p => p.role === 'bdr');
+    try {
+      const { data: allProfs, error } = await db.from('profiles').select('*');
+      if (error) throw error;
+      const profs = allProfs || [];
+      profs.forEach(p => { profilesMap[p.id] = p.display_name; });
+      currentProfile = profs.find(p => p.id === currentUser.id) || null;
+      if (currentProfile?.role === 'ae' || isAdmin()) {
+        bdrs = profs.filter(p => p.role === 'bdr');
+      }
+    } catch (err) {
+      console.error('Error loading profile:', err);
+      showToast('Error loading profile. Please refresh.');
+      throw err;
     }
   }
 
@@ -723,20 +799,29 @@
 
   // ── DATA ──
   async function loadContacts() {
-    const timeout = new Promise(resolve => setTimeout(() => resolve({ data: null, error: { message: 'timeout' } }), 10000));
-    const { data, error } = await Promise.race([
-      db.from('contacts').select('*').order('created_at', { ascending: false }),
-      timeout
-    ]);
-    if (error || !data) {
-      document.getElementById('pipelineList').innerHTML =
-        `<div class="empty-state"><div class="empty-icon">⚠️</div><p>Couldn't load contacts. <a href="" onclick="location.reload();return false;" style="color:var(--green-dark);">Refresh page</a></p></div>`;
-      return;
+    try {
+      const timeout = new Promise((resolve, reject) => {
+        setTimeout(() => reject(new Error('Database query timeout - please refresh')), 15000);
+      });
+      const { data, error } = await Promise.race([
+        db.from('contacts').select('*').order('created_at', { ascending: false }),
+        timeout
+      ]);
+      if (error) throw error;
+      if (!data) throw new Error('No data returned from database');
+      
+      const all = data || [];
+      contacts = all.filter(c => c.user_id === currentUser.id);
+      assignedContacts = all.filter(c => c.assigned_to === currentUser.id);
+      render();
+    } catch (err) {
+      console.error('Error loading contacts:', err);
+      const errorMsg = err.message || 'Failed to load contacts';
+      document.getElementById('pipelineList').innerHTML = 
+        `<div class="empty-state"><div class="empty-icon">⚠️</div><p>${escapeHtml(errorMsg)}<br/><a href="" onclick="location.reload();return false;" style="color:var(--green-dark);">Refresh page</a></p></div>`;
+      document.getElementById('callList').innerHTML = 
+        `<div class="empty-call" style="color:var(--text-muted);">Error loading: ${escapeHtml(errorMsg)}</div>`;
     }
-    const all = data || [];
-    contacts = all.filter(c => c.user_id === currentUser.id);
-    assignedContacts = all.filter(c => c.assigned_to === currentUser.id);
-    render();
   }
 
   async function addContact() {
@@ -750,19 +835,24 @@
     const email_date = dateInput.value || todayStr();
     if (!name) { nameInput.focus(); showToast('Enter a contact name.'); return; }
 
-    const { data, error } = await db.from('contacts')
-      .insert({ name, email, notes, email_date, called: false, user_id: currentUser.id, temperature: selectedTemp || null })
-      .select().single();
+    try {
+      const { data, error } = await db.from('contacts')
+        .insert({ name, email, notes, email_date, called: false, user_id: currentUser.id, temperature: selectedTemp || null })
+        .select().single();
 
-    if (error) { showToast('Error adding contact.'); return; }
-    contacts.unshift(data);
-    render();
-    nameInput.value = ''; emailInput.value = ''; notesInput.value = '';
-    dateInput.value = todayStr();
-    document.querySelectorAll('.temp-btn').forEach(b => b.classList.remove('selected'));
-    selectedTemp = '';
-    nameInput.focus();
-    showToast('Contact added!');
+      if (error) throw error;
+      contacts.unshift(data);
+      render();
+      nameInput.value = ''; emailInput.value = ''; notesInput.value = '';
+      dateInput.value = todayStr();
+      document.querySelectorAll('.temp-btn').forEach(b => b.classList.remove('selected'));
+      selectedTemp = '';
+      nameInput.focus();
+      showToast('Contact added!');
+    } catch (err) {
+      console.error('Error adding contact:', err);
+      showToast('Error adding contact. Please try again.');
+    }
   }
 
   async function addAssignedLead() {
@@ -778,19 +868,25 @@
     const assigned_to = bdrSelect.value;
     if (!name) { nameInput.focus(); showToast('Enter a contact name.'); return; }
     if (!assigned_to) { showToast('Select a BDR to assign.'); return; }
-    const { data, error } = await db.from('contacts')
-      .insert({ name, email, notes, email_date, called: false, user_id: currentUser.id, temperature: selectedAssignTemp || null, assigned_to })
-      .select().single();
-    if (error) { showToast('Error assigning lead.'); return; }
-    contacts.unshift(data);
-    nameInput.value = ''; emailInput.value = ''; notesInput.value = '';
-    dateInput.value = todayStr(); bdrSelect.value = '';
-    document.querySelectorAll('#assignForm .temp-btn').forEach(b => b.classList.remove('selected'));
-    selectedAssignTemp = '';
-    nameInput.focus();
-    showToast('Lead assigned!');
-    renderAssignTab();
-    render();
+    
+    try {
+      const { data, error } = await db.from('contacts')
+        .insert({ name, email, notes, email_date, called: false, user_id: currentUser.id, temperature: selectedAssignTemp || null, assigned_to })
+        .select().single();
+      if (error) throw error;
+      contacts.unshift(data);
+      nameInput.value = ''; emailInput.value = ''; notesInput.value = '';
+      dateInput.value = todayStr(); bdrSelect.value = '';
+      document.querySelectorAll('#assignForm .temp-btn').forEach(b => b.classList.remove('selected'));
+      selectedAssignTemp = '';
+      nameInput.focus();
+      showToast('Lead assigned!');
+      renderAssignTab();
+      render();
+    } catch (err) {
+      console.error('Error assigning lead:', err);
+      showToast('Error assigning lead. Please try again.');
+    }
   }
 
   function renderAssignTab() {
@@ -827,77 +923,108 @@
   }
 
   async function assignContact(id, bdrId) {
-    const val = bdrId || null;
-    const { error } = await db.from('contacts').update({ assigned_to: val }).eq('id', id);
-    if (error) { showToast('Error assigning.'); return; }
-    const c = contacts.find(c => c.id === id);
-    if (c) { c.assigned_to = val; render(); }
-    showToast(val ? 'Lead assigned!' : 'Assignment removed.');
+    try {
+      const val = bdrId || null;
+      const { error } = await db.from('contacts').update({ assigned_to: val }).eq('id', id);
+      if (error) throw error;
+      const c = contacts.find(c => c.id === id);
+      if (c) { c.assigned_to = val; render(); }
+      showToast(val ? 'Lead assigned!' : 'Assignment removed.');
+    } catch (err) {
+      console.error('Error assigning contact:', err);
+      showToast('Error assigning. Please try again.');
+    }
   }
 
   async function toggleCalled(id) {
-    const all = [...contacts, ...assignedContacts];
-    const c = all.find(c => c.id === id);
-    if (!c) return;
-    const { error } = await db.from('contacts').update({ called: !c.called }).eq('id', id);
-    if (error) { showToast('Error updating.'); return; }
-    c.called = !c.called;
-    render();
-    showToast(c.called ? 'Marked as called!' : 'Unmarked.');
+    try {
+      const all = [...contacts, ...assignedContacts];
+      const c = all.find(c => c.id === id);
+      if (!c) return;
+      const { error } = await db.from('contacts').update({ called: !c.called }).eq('id', id);
+      if (error) throw error;
+      c.called = !c.called;
+      render();
+      showToast(c.called ? 'Marked as called!' : 'Unmarked.');
+    } catch (err) {
+      console.error('Error updating status:', err);
+      showToast('Error updating. Please try again.');
+    }
   }
 
   async function deleteContact(id) {
-    const { error } = await db.from('contacts').delete().eq('id', id);
-    if (error) { showToast('Error deleting.'); return; }
-    contacts = contacts.filter(c => c.id !== id);
-    selectedIds.delete(id);
-    render();
-    showToast('Removed.');
+    try {
+      const { error } = await db.from('contacts').delete().eq('id', id);
+      if (error) throw error;
+      contacts = contacts.filter(c => c.id !== id);
+      selectedIds.delete(id);
+      render();
+      showToast('Removed.');
+    } catch (err) {
+      console.error('Error deleting contact:', err);
+      showToast('Error deleting. Please try again.');
+    }
   }
 
   // ── ADMIN ──
   async function loadAdminUsers() {
     const list = document.getElementById('adminUserList');
     list.innerHTML = '<div class="loading">Loading users...</div>';
-    const { data, error } = await db.from('profiles').select('*').order('display_name');
-    if (error) { list.innerHTML = '<div class="loading">Error loading users.</div>'; return; }
-    if (!data.length) { list.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>No users yet.</p></div>'; return; }
+    try {
+      const { data, error } = await db.from('profiles').select('*').order('display_name');
+      if (error) throw error;
+      if (!data.length) { 
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>No users yet.</p></div>'; 
+        return; 
+      }
 
-    list.innerHTML = data.map(u => {
-      const roleClass = u.role ? 'role-' + u.role : 'role-pending';
-      return `
-        <div class="admin-user-item">
-          <div class="admin-user-info">
-            <div class="admin-user-name">${escapeHtml(u.display_name || 'Unknown')}</div>
-            <div class="admin-user-email" id="email-${u.id}">Loading...</div>
-          </div>
-          <select class="admin-role-select ${roleClass}" onchange="setUserRole('${u.id}', this)">
-            <option value="" ${!u.role ? 'selected' : ''}>Pending</option>
-            <option value="ae" ${u.role === 'ae' ? 'selected' : ''}>AE</option>
-            <option value="bdr" ${u.role === 'bdr' ? 'selected' : ''}>BDR</option>
-          </select>
-        </div>`;
-    }).join('');
+      list.innerHTML = data.map(u => {
+        const roleClass = u.role ? 'role-' + u.role : 'role-pending';
+        return `
+          <div class="admin-user-item">
+            <div class="admin-user-info">
+              <div class="admin-user-name">${escapeHtml(u.display_name || 'Unknown')}</div>
+              <div class="admin-user-email" id="email-${u.id}">Loading...</div>
+            </div>
+            <select class="admin-role-select ${roleClass}" onchange="setUserRole('${u.id}', this)">
+              <option value="" ${!u.role ? 'selected' : ''}>Pending</option>
+              <option value="ae" ${u.role === 'ae' ? 'selected' : ''}>AE</option>
+              <option value="bdr" ${u.role === 'bdr' ? 'selected' : ''}>BDR</option>
+            </select>
+          </div>`;
+      }).join('');
 
-    // Load emails via auth (admin only sees own email, so we store it in profiles or show what we have)
-    // Since we can't query auth.users from client, show display_name only — email not accessible from client SDK
-    data.forEach(u => {
-      const el = document.getElementById('email-' + u.id);
-      if (el) el.textContent = u.id === currentUser.id ? currentUser.email : '(sign-in email hidden)';
-    });
+      // Load emails via auth (admin only sees own email, so we store it in profiles or show what we have)
+      // Since we can't query auth.users from client, show display_name only — email not accessible from client SDK
+      data.forEach(u => {
+        const el = document.getElementById('email-' + u.id);
+        if (el) el.textContent = u.id === currentUser.id ? currentUser.email : '(sign-in email hidden)';
+      });
+    } catch (err) {
+      console.error('Error loading admin users:', err);
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>Error loading users. Please refresh.</p></div>`;
+    }
   }
 
   async function setUserRole(userId, select) {
     const role = select.value || null;
-    const { error } = await db.from('profiles').update({ role }).eq('id', userId);
-    if (error) { showToast('Error updating role.'); return; }
-    select.className = 'admin-role-select ' + (role ? 'role-' + role : 'role-pending');
-    showToast('Role updated!');
-    // Reload profiles in case list changed
-    const { data: allProfs } = await db.from('profiles').select('*');
-    const profs = allProfs || [];
-    profs.forEach(p => { profilesMap[p.id] = p.display_name; });
-    bdrs = profs.filter(p => p.role === 'bdr');
+    try {
+      const { error } = await db.from('profiles').update({ role }).eq('id', userId);
+      if (error) throw error;
+      select.className = 'admin-role-select ' + (role ? 'role-' + role : 'role-pending');
+      showToast('Role updated!');
+      // Reload profiles in case list changed
+      const { data: allProfs, error: loadErr } = await db.from('profiles').select('*');
+      if (loadErr) throw loadErr;
+      const profs = allProfs || [];
+      profs.forEach(p => { profilesMap[p.id] = p.display_name; });
+      bdrs = profs.filter(p => p.role === 'bdr');
+    } catch (err) {
+      console.error('Error setting user role:', err);
+      showToast('Error updating role. Please try again.');
+      // Reset select to original value
+      loadAdminUsers();
+    }
   }
 
   // ── RENDER HELPERS ──
@@ -1097,6 +1224,17 @@
 
   document.getElementById('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') addContact(); });
   document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') signIn(); });
+
+  // Global error handler
+  window.addEventListener('error', (event) => {
+    console.error('Uncaught error:', event.error);
+    showToast('An error occurred. Please refresh the page.');
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
+    showToast('An error occurred. Please refresh the page.');
+  });
 </script>
 </body>
 </html>

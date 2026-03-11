@@ -1235,7 +1235,8 @@
   }
 
   function exportItemHtml(c, isAssigned) {
-    const aeInfo = isAssigned && profilesMap[c.user_id]
+    // Show who created/assigned this contact
+    const ownerInfo = profilesMap[c.user_id]
       ? `<div style="font-size:0.78rem;color:var(--blue-dark);margin-top:3px;">Assigned by ${escapeHtml(profilesMap[c.user_id])}</div>`
       : '';
     
@@ -1254,7 +1255,7 @@
         <div class="export-info">
           <div class="export-name">${c.temperature ? `<span style="margin-right:5px;">${c.temperature}</span>` : ''}${escapeHtml(c.name)}</div>
           <div class="export-email">${c.email ? escapeHtml(c.email) : '<span style="opacity:0.5">No email on file</span>'}</div>
-          ${aeInfo}
+          ${ownerInfo}
           ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:3px;">${escapeHtml(c.notes)}</div>` : ''}
         </div>
         <div class="export-date">Day email sent:<br/><strong>${dateDisplay}</strong></div>

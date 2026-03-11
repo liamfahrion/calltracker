@@ -584,10 +584,6 @@
     const el = document.getElementById('authError');
     el.textContent = msg; el.style.display = 'block';
     document.getElementById('authSuccess').style.display = 'none';
-    // Make sure auth screen is visible
-    document.getElementById('authScreen').style.display = 'flex';
-    document.getElementById('pendingScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display = 'none';
   }
   function showAuthSuccess(msg) {
     const el = document.getElementById('authSuccess');
@@ -666,17 +662,13 @@
 
   // ── AUTH STATE ──
   let booting = false;
-  let authInitialized = false;
-  
   db.auth.onAuthStateChange(async (event, session) => {
-    authInitialized = true;
     currentUser = session?.user ?? null;
     if (currentUser) {
       if (booting) return; // prevent concurrent bootApp calls
       booting = true;
       try { await bootApp(); } catch (err) {
         console.error('Boot error:', err);
-        showAuthError('Failed to start app. Please refresh the page.');
       } finally { booting = false; }
     } else {
       booting = false;
@@ -685,17 +677,6 @@
       document.getElementById('appScreen').style.display = 'none';
     }
   });
-
-  // Ensure auth is initialized on page load
-  setTimeout(() => {
-    if (!authInitialized) {
-      console.warn('Auth not initialized after 2 seconds');
-      // Check if we can access auth
-      if (!db.auth) {
-        showAuthError('Failed to load authentication. Please refresh and check your connection.');
-      }
-    }
-  }, 2000);
 
   async function bootApp() {
     try {
@@ -761,12 +742,13 @@
     // Admin nav tab
     document.getElementById('adminNavTab').style.display = isAdmin() ? '' : 'none';
 
-    // AE: show add form + assign tab; BDR: hide them
+    // AE: show add form + assign tab; BDR: show add form, hide assign tab
     const isAE = role === 'ae' || isAdmin();
-    document.getElementById('addForm').style.display = isAE ? '' : 'none';
+    document.getElementById('addForm').style.display = (isAE || role === 'bdr') ? '' : 'none';
     document.getElementById('assignNavTab').style.display = isAE ? '' : 'none';
     document.getElementById('allContactsTitle').textContent = role === 'bdr' ? 'My Contacts' : 'All Contacts';
     document.getElementById('dateInput').value = todayStr();
+    document.getElementById('assignDateInput').value = todayStr();
   }
 
   async function loadProfile() {
@@ -866,13 +848,20 @@
     const notes = notesInput.value.trim();
     const email_date = dateInput.value || todayStr();
     const assigned_to = bdrSelect.value;
+    
+    console.log('Assign form values:', { name, email, notes, email_date, assigned_to, currentUserId: currentUser.id });
+    
     if (!name) { nameInput.focus(); showToast('Enter a contact name.'); return; }
-    if (!assigned_to) { showToast('Select a BDR to assign.'); return; }
+    if (!assigned_to) { showToast('Select a BDR to assign.'); console.warn('No BDR selected'); return; }
     
     try {
+      console.log('Inserting contact:', { name, email, notes, email_date, called: false, user_id: currentUser.id, temperature: selectedAssignTemp || null, assigned_to });
       const { data, error } = await db.from('contacts')
         .insert({ name, email, notes, email_date, called: false, user_id: currentUser.id, temperature: selectedAssignTemp || null, assigned_to })
         .select().single();
+      
+      console.log('Insert response:', { data, error });
+      
       if (error) throw error;
       contacts.unshift(data);
       nameInput.value = ''; emailInput.value = ''; notesInput.value = '';
@@ -885,7 +874,7 @@
       render();
     } catch (err) {
       console.error('Error assigning lead:', err);
-      showToast('Error assigning lead. Please try again.');
+      showToast('Error assigning lead: ' + (err.message || err));
     }
   }
 
@@ -893,6 +882,14 @@
     // Populate BDR dropdown
     const sel = document.getElementById('assignBdrSelect');
     const cur = sel.value;
+    
+    if (bdrs.length === 0) {
+      sel.innerHTML = '<option value="">No BDRs available</option>';
+      const list = document.getElementById('myAssignedList');
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><p>No BDRs have been set up yet. Ask your admin to assign team members as BDRs.</p></div>`;
+      return;
+    }
+    
     sel.innerHTML = '<option value="">Select BDR...</option>' +
       bdrs.map(b => `<option value="${b.id}" ${b.id === cur ? 'selected' : ''}>${escapeHtml(b.display_name)}</option>`).join('');
     document.getElementById('assignDateInput').value = document.getElementById('assignDateInput').value || todayStr();

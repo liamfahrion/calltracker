@@ -636,11 +636,15 @@
   }
 
   // ── AUTH STATE ──
+  let booting = false;
   db.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user ?? null;
     if (currentUser) {
-      await bootApp();
+      if (booting) return; // prevent concurrent bootApp calls
+      booting = true;
+      try { await bootApp(); } finally { booting = false; }
     } else {
+      booting = false;
       document.getElementById('authScreen').style.display = 'flex';
       document.getElementById('pendingScreen').style.display = 'none';
       document.getElementById('appScreen').style.display = 'none';
@@ -719,8 +723,16 @@
 
   // ── DATA ──
   async function loadContacts() {
-    const { data, error } = await db.from('contacts').select('*').order('created_at', { ascending: false });
-    if (error) { showToast('Error loading contacts.'); return; }
+    const timeout = new Promise(resolve => setTimeout(() => resolve({ data: null, error: { message: 'timeout' } }), 10000));
+    const { data, error } = await Promise.race([
+      db.from('contacts').select('*').order('created_at', { ascending: false }),
+      timeout
+    ]);
+    if (error || !data) {
+      document.getElementById('pipelineList').innerHTML =
+        `<div class="empty-state"><div class="empty-icon">⚠️</div><p>Couldn't load contacts. <a href="" onclick="location.reload();return false;" style="color:var(--green-dark);">Refresh page</a></p></div>`;
+      return;
+    }
     const all = data || [];
     contacts = all.filter(c => c.user_id === currentUser.id);
     assignedContacts = all.filter(c => c.assigned_to === currentUser.id);

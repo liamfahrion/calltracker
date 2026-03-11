@@ -412,6 +412,7 @@
     <button class="nav-tab" onclick="switchAppTab('export', this)">Export to Apollo</button>
     <button class="nav-tab" id="assignNavTab" style="display:none" onclick="switchAppTab('assign', this)">Assign Lead</button>
     <button class="nav-tab" id="adminNavTab" style="display:none" onclick="switchAppTab('admin', this)">Manage Users</button>
+    <button class="nav-tab" id="bdrViewNavTab" style="display:none" onclick="switchAppTab('bdrview', this)">BDR View</button>
   </nav>
 
   <main>
@@ -528,6 +529,17 @@
       </div>
       <div class="admin-user-list" id="adminUserList">
         <div class="loading">Loading users...</div>
+      </div>
+    </div>
+
+    <!-- BDR VIEW TAB -->
+    <div class="tab-panel" id="tab-bdrview">
+      <div style="background:var(--blue-dark);color:white;border-radius:16px;padding:20px 22px;margin-bottom:20px;font-size:0.95rem;line-height:1.7;box-shadow:0 4px 20px rgba(26,122,60,0.35);">
+        <strong style="display:block;font-size:1rem;margin-bottom:8px;">BDR Assignment Overview</strong>
+        View which contacts have been assigned to each BDR and who assigned them.
+      </div>
+      <div id="bdrViewContainer">
+        <div class="loading">Loading BDR assignments...</div>
       </div>
     </div>
 
@@ -816,6 +828,9 @@
     // Admin nav tab
     document.getElementById('adminNavTab').style.display = isAdmin() ? '' : 'none';
 
+    // BDR View nav tab (admin only)
+    document.getElementById('bdrViewNavTab').style.display = isAdmin() ? '' : 'none';
+
     // AE: show add form + assign tab; BDR: show add form, hide assign tab
     const isAE = role === 'ae' || isAdmin();
     document.getElementById('addForm').style.display = (isAE || role === 'bdr') ? '' : 'none';
@@ -851,6 +866,7 @@
     if (tab === 'export') renderExport();
     if (tab === 'assign') renderAssignTab();
     if (tab === 'admin') loadAdminUsers();
+    if (tab === 'bdrview') renderBDRView();
   }
 
   // ── DATA ──
@@ -1035,6 +1051,57 @@
       console.error('Error deleting contact:', err);
       showToast('Error deleting. Please try again.');
     }
+  }
+
+  // ── BDR VIEW ──
+  function renderBDRView() {
+    const container = document.getElementById('bdrViewContainer');
+    
+    // Get all contacts assigned to BDRs
+    const assignedContacts = contacts.filter(c => c.assigned_to);
+    
+    if (!assignedContacts.length) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>No leads have been assigned to BDRs yet.</p></div>`;
+      return;
+    }
+    
+    // Group by BDR
+    const byBDR = {};
+    assignedContacts.forEach(c => {
+      if (!byBDR[c.assigned_to]) {
+        byBDR[c.assigned_to] = [];
+      }
+      byBDR[c.assigned_to].push(c);
+    });
+    
+    // Render by BDR
+    container.innerHTML = Object.keys(byBDR).map(bdrId => {
+      const bdrName = profilesMap[bdrId] || 'Unknown BDR';
+      const leads = byBDR[bdrId];
+      
+      return `
+        <div style="background:var(--white);border-radius:16px;padding:20px 22px;margin-bottom:20px;box-shadow:var(--shadow);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <div style="font-size:1.1rem;font-weight:700;color:var(--blue-dark);">${escapeHtml(bdrName)}</div>
+            <span style="background:var(--blue-pale);color:var(--blue-dark);padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;">${leads.length} lead${leads.length > 1 ? 's' : ''}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            ${leads.map(c => {
+              const aeName = profilesMap[c.user_id] || 'Unknown AE';
+              return `
+                <div style="background:var(--green-pale);border-radius:12px;padding:12px 14px;border-left:4px solid var(--green-main);">
+                  <div style="font-size:0.95rem;font-weight:600;color:var(--text-dark);">${c.temperature ? c.temperature + ' ' : ''}${escapeHtml(c.name)}</div>
+                  <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:0.8rem;color:var(--text-muted);">
+                    <span>📧 ${c.email || 'no email'}</span>
+                    <span>📅 ${formatDate(c.email_date)}</span>
+                    <span style="color:var(--green-dark);font-weight:600;">Assigned by: ${escapeHtml(aeName)}</span>
+                  </div>
+                  ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:6px;">📝 ${escapeHtml(c.notes)}</div>` : ''}
+                </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }).join('');
   }
 
   // ── ADMIN ──

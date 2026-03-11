@@ -22,7 +22,7 @@
     }
 
     body {
-      font-family: Georgia, serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--green-pale);
       color: var(--text-dark);
       min-height: 100vh;
@@ -621,7 +621,7 @@
     document.getElementById('callBadge').textContent = callToday.filter(c => !c.called).length;
     const callList = document.getElementById('callList');
     if (callToday.length === 0) {
-      callList.innerHTML = '<div class="empty-call">No one to call today — check back tomorrow.</div>';
+      callList.innerHTML = '<div class="empty-call">No one to call today here, rip more dials</div>';
     } else {
       callList.innerHTML = callToday.map(c => `
         <div class="call-item ${c.called ? 'called' : ''}">

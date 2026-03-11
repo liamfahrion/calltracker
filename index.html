@@ -410,6 +410,7 @@
   <nav class="app-nav" id="appNav">
     <button class="nav-tab active" onclick="switchAppTab('contacts', this)">Contacts</button>
     <button class="nav-tab" onclick="switchAppTab('export', this)">Export to Apollo</button>
+    <button class="nav-tab" id="assignNavTab" style="display:none" onclick="switchAppTab('assign', this)">Assign Lead</button>
     <button class="nav-tab" id="adminNavTab" style="display:none" onclick="switchAppTab('admin', this)">Manage Users</button>
   </nav>
 
@@ -419,7 +420,7 @@
     <div class="tab-panel active" id="tab-contacts">
       <div class="assigned-section" id="assignedSection" style="display:none">
         <div class="section-hdr">
-          <h2>Assigned Leads</h2>
+          <h2>Assigned by AE</h2>
           <span class="call-badge assigned-badge" id="assignedBadge">0</span>
         </div>
         <div class="call-list" id="assignedList"></div>
@@ -479,11 +480,44 @@
         <button class="export-btn" id="exportBtn" onclick="exportCSV()" disabled>Export Sequence CSV</button>
       </div>
       <div id="exportAssignedSection" style="display:none">
-        <div class="export-section-label" style="color:var(--blue-dark);">Assigned Leads</div>
+        <div class="export-section-label" style="color:var(--blue-dark);">ASSIGNED BY AE</div>
         <div class="export-list" id="exportAssignedList"></div>
         <div class="export-section-label" style="margin-top:16px;">My Contacts</div>
       </div>
       <div class="export-list" id="exportList"><div class="loading">Loading...</div></div>
+    </div>
+
+    <!-- ASSIGN LEAD TAB -->
+    <div class="tab-panel" id="tab-assign">
+      <div class="add-form" id="assignForm">
+        <h2>Assign a lead to a BDR</h2>
+        <div class="form-row">
+          <input type="text" class="form-input" id="assignNameInput" placeholder="Contact name..." maxlength="60" />
+          <input type="email" class="form-input" id="assignEmailInput" placeholder="their@email.com" />
+          <input type="date" class="form-input date-input" id="assignDateInput" />
+        </div>
+        <div class="form-row" style="margin-top:10px;gap:8px;align-items:center;">
+          <input type="text" class="form-input" id="assignNotesInput" placeholder="Notes (optional)..." maxlength="200" />
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button type="button" class="temp-btn" data-temp="❄️" onclick="selectAssignTemp(this)" title="Cold">❄️</button>
+            <button type="button" class="temp-btn" data-temp="🌤️" onclick="selectAssignTemp(this)" title="Cool">🌤️</button>
+            <button type="button" class="temp-btn" data-temp="♨️" onclick="selectAssignTemp(this)" title="Warm">♨️</button>
+            <button type="button" class="temp-btn" data-temp="🔥" onclick="selectAssignTemp(this)" title="Hot">🔥</button>
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:10px;">
+          <select class="form-input" id="assignBdrSelect" style="max-width:220px;">
+            <option value="">Select BDR...</option>
+          </select>
+          <button class="add-btn" onclick="addAssignedLead()">+ Assign</button>
+        </div>
+      </div>
+      <div class="section-header">
+        <span class="section-title">Leads I've Assigned</span>
+      </div>
+      <div class="pipeline-list" id="myAssignedList">
+        <div class="loading">Loading...</div>
+      </div>
     </div>
 
     <!-- ADMIN TAB -->
@@ -517,14 +551,23 @@
   let bdrs = [];
   let selectedIds = new Set();
   let selectedTemp = '';
+  let selectedAssignTemp = '';
+  let profilesMap = {};
 
   const isAdmin = () => currentUser?.email === ADMIN_EMAIL;
 
   function selectTemp(btn) {
     const already = btn.classList.contains('selected');
-    document.querySelectorAll('.temp-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('#addForm .temp-btn').forEach(b => b.classList.remove('selected'));
     if (!already) { btn.classList.add('selected'); selectedTemp = btn.dataset.temp; }
     else selectedTemp = '';
+  }
+
+  function selectAssignTemp(btn) {
+    const already = btn.classList.contains('selected');
+    document.querySelectorAll('#assignForm .temp-btn').forEach(b => b.classList.remove('selected'));
+    if (!already) { btn.classList.add('selected'); selectedAssignTemp = btn.dataset.temp; }
+    else selectedAssignTemp = '';
   }
 
   // ── AUTH ──
@@ -645,19 +688,21 @@
     // Admin nav tab
     document.getElementById('adminNavTab').style.display = isAdmin() ? '' : 'none';
 
-    // AE: show add form; BDR: hide it
+    // AE: show add form + assign tab; BDR: hide them
     const isAE = role === 'ae' || isAdmin();
     document.getElementById('addForm').style.display = isAE ? '' : 'none';
+    document.getElementById('assignNavTab').style.display = isAE ? '' : 'none';
     document.getElementById('allContactsTitle').textContent = role === 'bdr' ? 'My Contacts' : 'All Contacts';
     document.getElementById('dateInput').value = todayStr();
   }
 
   async function loadProfile() {
-    const { data } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
-    currentProfile = data;
+    const { data: allProfs } = await db.from('profiles').select('*');
+    const profs = allProfs || [];
+    profs.forEach(p => { profilesMap[p.id] = p.display_name; });
+    currentProfile = profs.find(p => p.id === currentUser.id) || null;
     if (currentProfile?.role === 'ae' || isAdmin()) {
-      const { data: bdrData } = await db.from('profiles').select('*').eq('role', 'bdr');
-      bdrs = bdrData || [];
+      bdrs = profs.filter(p => p.role === 'bdr');
     }
   }
 
@@ -668,6 +713,7 @@
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + tab).classList.add('active');
     if (tab === 'export') renderExport();
+    if (tab === 'assign') renderAssignTab();
     if (tab === 'admin') loadAdminUsers();
   }
 
@@ -705,6 +751,67 @@
     selectedTemp = '';
     nameInput.focus();
     showToast('Contact added!');
+  }
+
+  async function addAssignedLead() {
+    const nameInput = document.getElementById('assignNameInput');
+    const emailInput = document.getElementById('assignEmailInput');
+    const notesInput = document.getElementById('assignNotesInput');
+    const dateInput = document.getElementById('assignDateInput');
+    const bdrSelect = document.getElementById('assignBdrSelect');
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const notes = notesInput.value.trim();
+    const email_date = dateInput.value || todayStr();
+    const assigned_to = bdrSelect.value;
+    if (!name) { nameInput.focus(); showToast('Enter a contact name.'); return; }
+    if (!assigned_to) { showToast('Select a BDR to assign.'); return; }
+    const { data, error } = await db.from('contacts')
+      .insert({ name, email, notes, email_date, called: false, user_id: currentUser.id, temperature: selectedAssignTemp || null, assigned_to })
+      .select().single();
+    if (error) { showToast('Error assigning lead.'); return; }
+    contacts.unshift(data);
+    nameInput.value = ''; emailInput.value = ''; notesInput.value = '';
+    dateInput.value = todayStr(); bdrSelect.value = '';
+    document.querySelectorAll('#assignForm .temp-btn').forEach(b => b.classList.remove('selected'));
+    selectedAssignTemp = '';
+    nameInput.focus();
+    showToast('Lead assigned!');
+    renderAssignTab();
+    render();
+  }
+
+  function renderAssignTab() {
+    // Populate BDR dropdown
+    const sel = document.getElementById('assignBdrSelect');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Select BDR...</option>' +
+      bdrs.map(b => `<option value="${b.id}" ${b.id === cur ? 'selected' : ''}>${escapeHtml(b.display_name)}</option>`).join('');
+    document.getElementById('assignDateInput').value = document.getElementById('assignDateInput').value || todayStr();
+
+    // List leads I've assigned (contacts I created that have assigned_to set)
+    const myAssigned = contacts.filter(c => c.assigned_to);
+    const list = document.getElementById('myAssignedList');
+    if (!myAssigned.length) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>No leads assigned yet. Use the form above to assign a lead directly to a BDR.</p></div>`;
+      return;
+    }
+    list.innerHTML = myAssigned.map(c => {
+      const bdrName = profilesMap[c.assigned_to] || 'BDR';
+      return `
+        <div class="pipeline-item">
+          <div class="pipeline-info">
+            <div class="pipeline-name">${c.temperature ? `<span style="margin-right:5px;">${c.temperature}</span>` : ''}${escapeHtml(c.name)}</div>
+            <div class="pipeline-dates">
+              <span>→ ${escapeHtml(bdrName)}</span>
+              ${c.email ? `<span>✉️ ${escapeHtml(c.email)}</span>` : ''}
+              <span>📧 ${formatDate(c.email_date)}</span>
+            </div>
+            ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:4px;">${escapeHtml(c.notes)}</div>` : ''}
+          </div>
+          <button class="delete-btn" onclick="deleteContact('${c.id}');renderAssignTab()">✕</button>
+        </div>`;
+    }).join('');
   }
 
   async function assignContact(id, bdrId) {
@@ -774,9 +881,11 @@
     if (error) { showToast('Error updating role.'); return; }
     select.className = 'admin-role-select ' + (role ? 'role-' + role : 'role-pending');
     showToast('Role updated!');
-    // Reload BDRs in case list changed
-    const { data } = await db.from('profiles').select('*').eq('role', 'bdr');
-    bdrs = data || [];
+    // Reload profiles in case list changed
+    const { data: allProfs } = await db.from('profiles').select('*');
+    const profs = allProfs || [];
+    profs.forEach(p => { profilesMap[p.id] = p.display_name; });
+    bdrs = profs.filter(p => p.role === 'bdr');
   }
 
   // ── RENDER HELPERS ──
@@ -856,12 +965,18 @@
       assignedSection.style.display = '';
       document.getElementById('assignedBadge').textContent = assignedContacts.filter(c => !c.called).length;
       document.getElementById('assignedList').innerHTML = assignedContacts.length
-        ? assignedContacts.map(c => `
+        ? assignedContacts.map(c => {
+            const aeName = profilesMap[c.user_id] ? ` · Assigned by ${escapeHtml(profilesMap[c.user_id])}` : '';
+            return `
             <div class="call-item ${c.called ? 'called' : ''}">
               <button class="call-check" onclick="toggleCalled('${c.id}')">✓</button>
-              <div class="call-name">${c.temperature ? c.temperature + ' ' : ''}${escapeHtml(c.name)}</div>
-              <div class="call-meta">${c.email ? escapeHtml(c.email) : 'No email'}</div>
-            </div>`).join('')
+              <div style="flex:1;min-width:0;">
+                <div class="call-name">${c.temperature ? c.temperature + ' ' : ''}${escapeHtml(c.name)}</div>
+                <div class="call-meta">${c.email ? escapeHtml(c.email) : 'No email'}${aeName}</div>
+                ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:2px;">${escapeHtml(c.notes)}</div>` : ''}
+              </div>
+            </div>`;
+          }).join('')
         : '<div class="empty-call">No assigned leads yet.</div>';
     } else {
       assignedSection.style.display = 'none';
@@ -910,12 +1025,16 @@
   }
 
   function exportItemHtml(c, isAssigned) {
+    const aeInfo = isAssigned && profilesMap[c.user_id]
+      ? `<div style="font-size:0.78rem;color:var(--blue-dark);margin-top:3px;">Assigned by ${escapeHtml(profilesMap[c.user_id])}</div>`
+      : '';
     return `
       <div class="export-item ${isAssigned ? 'is-assigned' : ''} ${selectedIds.has(c.id) ? 'selected' : ''}" onclick="toggleSelect('${c.id}')">
         <div class="export-checkbox">✓</div>
         <div class="export-info">
           <div class="export-name">${c.temperature ? `<span style="margin-right:5px;">${c.temperature}</span>` : ''}${escapeHtml(c.name)}</div>
           <div class="export-email">${c.email ? escapeHtml(c.email) : '<span style="opacity:0.5">No email on file</span>'}</div>
+          ${aeInfo}
           ${c.notes ? `<div style="font-size:0.78rem;color:#8aaa96;margin-top:3px;">${escapeHtml(c.notes)}</div>` : ''}
         </div>
         <div class="export-date">Day email sent:<br/><strong>${formatExportDate(c.email_date)}</strong></div>

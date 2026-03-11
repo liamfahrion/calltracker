@@ -604,7 +604,14 @@
     
     try {
       console.log('Attempting sign in for:', email);
-      const { data, error } = await db.auth.signInWithPassword({ email, password });
+      
+      // Add explicit timeout
+      const signInPromise = db.auth.signInWithPassword({ email, password });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Sign in timeout - server not responding')), 10000)
+      );
+      
+      const { data, error } = await Promise.race([signInPromise, timeoutPromise]);
       console.log('Sign in response:', { data, error });
       
       if (error) {
@@ -614,25 +621,12 @@
         return;
       }
       
-      // Success - wait for auth state change callback
-      console.log('Sign in successful, waiting for auth state change...');
-      
-      // Add timeout in case auth state change doesn't fire
-      const timeout = setTimeout(() => {
-        if (btn.textContent === 'Signing in...') {
-          console.warn('Auth state change did not fire, manually triggering');
-          btn.disabled = false;
-          btn.textContent = 'Sign In';
-          // Try reloading to force auth state check
-          setTimeout(() => {
-            location.reload();
-          }, 1000);
-        }
-      }, 3000);
+      console.log('Sign in successful, user:', data?.user?.id);
+      // Don't reset button - let auth state change callback handle it
       
     } catch (err) {
       console.error('Sign in error:', err);
-      showAuthError(err.message || 'Sign in failed. Please try again.');
+      showAuthError(err.message || 'Sign in failed. Check your email and password.');
       btn.disabled = false; 
       btn.textContent = 'Sign In';
     }
